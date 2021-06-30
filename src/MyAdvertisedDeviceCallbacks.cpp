@@ -14,21 +14,55 @@
 
 #define ENDIAN_CHANGE_U16(x) ((((x)&0xFF00) >> 8) + (((x)&0xFF) << 8))
 
+void reportDeviceName(const char *dname)
+{
+    Serial.print("Device name: ");
+    Serial.println(dname);
+    Serial.println("");
+}
+
+void reportServiceUUID(String uuid)
+{
+    Serial.print("Found ServiceUUID: ");
+    Serial.println(uuid);
+    Serial.println("");
+}
+
+void reportOBeacon(String strManufacturerData, char *cManufacturerData)
+{
+    Serial.println("Found another manufacturers beacon!");
+    Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
+    for (int i = 0; i < strManufacturerData.length(); i++)
+    {
+        Serial.printf("[%X]", cManufacturerData[i]);
+    }
+    Serial.printf("\n");
+}
+
+void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower)
+{
+    Serial.println("Found an iBeacon!");
+
+    Serial.printf("iBeacon Frame\n");
+    Serial.printf("ID: %04X Major: %d Minor: %d UUID: %s Power: %d\n",
+                  manufacturerId,
+                  major,
+                  minor,
+                  proximityUUID,
+                  signalPower);
+}
+
 void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 {
     if (advertisedDevice.haveName())
     {
-        Serial.print("Device name: ");
-        Serial.println(advertisedDevice.getName().c_str());
-        Serial.println("");
+        reportDeviceName(advertisedDevice.getName().c_str());
     }
 
     if (advertisedDevice.haveServiceUUID())
     {
         BLEUUID devUUID = advertisedDevice.getServiceUUID();
-        Serial.print("Found ServiceUUID: ");
-        Serial.println(devUUID.toString().c_str());
-        Serial.println("");
+        reportServiceUUID(devUUID.toString().c_str());
     }
     else
     {
@@ -39,27 +73,20 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
             uint8_t cManufacturerData[100];
             strManufacturerData.copy((char *)cManufacturerData, strManufacturerData.length(), 0);
 
+            // TODO: What is this pattern matching, exactly?
             if (strManufacturerData.length() == 25 && cManufacturerData[0] == 0x4C && cManufacturerData[1] == 0x00)
             {
-                Serial.println("Found an iBeacon!");
                 BLEBeacon oBeacon = BLEBeacon();
                 oBeacon.setData(strManufacturerData);
-                Serial.printf("iBeacon Frame\n");
-                Serial.printf("ID: %04X Major: %d Minor: %d UUID: %s Power: %d\n",
-                              oBeacon.getManufacturerId(), ENDIAN_CHANGE_U16(oBeacon.getMajor()),
+                reportIBeacon(oBeacon.getManufacturerId(), ENDIAN_CHANGE_U16(oBeacon.getMajor()),
                               ENDIAN_CHANGE_U16(oBeacon.getMinor()),
                               oBeacon.getProximityUUID().toString().c_str(),
                               oBeacon.getSignalPower());
             }
             else
             {
-                Serial.println("Found another manufacturers beacon!");
-                Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
-                for (int i = 0; i < strManufacturerData.length(); i++)
-                {
-                    Serial.printf("[%X]", cManufacturerData[i]);
-                }
-                Serial.printf("\n");
+
+                reportOBeacon(strManufacturerData, cManufacturerData);
             }
         }
         return;
