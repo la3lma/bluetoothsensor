@@ -15,7 +15,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
 
   public: 
     void onResult(BLEAdvertisedDevice advertisedDevice);
-    MyAdvertisedDeviceCallbacks( BluetoothReporter *myReporter) {
+    MyAdvertisedDeviceCallbacks(BluetoothReporter *myReporter) {
       this->myReporter = myReporter;
     }
 };

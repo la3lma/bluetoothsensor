@@ -28,7 +28,7 @@ void setup()
 
   // TODO: This is now a reporter that reports to standard out.  That is a bit silly, should
   //       instead report to a service on the intertubes.  We'll get there eventually.
-  myReporter = new BluetoothReporter;
+  myReporter = new SerialBluetoothReporter;
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
