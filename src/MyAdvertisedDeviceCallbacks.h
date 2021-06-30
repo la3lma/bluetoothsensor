@@ -8,8 +8,14 @@
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
 
+#include "BluetoothReporter.h"
 class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
 {
+   BluetoothReporter *myReporter;
+
   public: 
     void onResult(BLEAdvertisedDevice advertisedDevice);
+    MyAdvertisedDeviceCallbacks( BluetoothReporter *myReporter) {
+      this->myReporter = myReporter;
+    }
 };
