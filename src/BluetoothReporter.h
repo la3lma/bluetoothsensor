@@ -11,7 +11,7 @@ public:
     virtual void scanDone();
 };
 
-class SerialBluetoothReporter : public BluetoothReporter
+class SerialBluetoothReporter final : public BluetoothReporter
 {
 public:
     void reportDeviceName(const char *dname);
