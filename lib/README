@@ -44,3 +44,12 @@ libraries scanning project source files.
 
 More information about PlatformIO Library Dependency Finder
 - https://docs.platformio.org/page/librarymanager/ldf.html
+
+
+# TODO
+
+1. Make a http client that is able to talk to an nc server receiving hello-world text.
+2. Extend http client to post http JSON contents
+3. Let that json content contain the messages about which bluetooth devices are being seen
+4. Declare victory and do the rest of the work in the code that receives the bluetooth reports.
+

@@ -49,3 +49,4 @@ void SerialBluetoothReporter::scanDone()
 {
     Serial.println("Scan done");
 }
+
