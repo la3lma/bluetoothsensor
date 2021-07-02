@@ -3,7 +3,7 @@
 #include "BluetoothReporter.h"
 
 #include <SPI.h>
-#include <HttpClient.h>
+// #include <HttpClient.h>
 // #include <Ethernet.h>
 // #include <EthernetClient.h>
 
