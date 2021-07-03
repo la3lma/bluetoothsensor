@@ -6,7 +6,6 @@
 
 // https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/SimplePost/SimplePost.ino
 
-const char *serverName = "http://10.0.0.94:3000/update-sensor"; // server address
 
 // https://RandomNerdTutorials.com/esp32-http-get-post-arduino/
 void HttpClientAdapter::sendHttpPost()
@@ -18,7 +17,7 @@ void HttpClientAdapter::sendHttpPost()
          Serial.println("Preparing to send HTTP");
 
         // Your Domain name with URL path or IP address with path
-        http.begin(client, serverName);
+        http.begin(client, this->serverName);
 
         // Specify content-type header
         http.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -80,8 +79,9 @@ void HttpClientAdapter::initializeHttpClient() {
     // Maybe nuke this?
 }
 
-HttpClientAdapter::HttpClientAdapter()
+HttpClientAdapter::HttpClientAdapter(const char *serverName)
 {
+    this->serverName = serverName;
     this->connectToWifiNetwork();
     this->sendHttpPost();
 }

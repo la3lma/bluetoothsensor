@@ -6,18 +6,24 @@
 
 void HttpBluetoothReporter::reportDeviceName(const char *dname)
 {
+    /*
     Serial.print("zDevice name: ");
     Serial.println(dname);
     Serial.println("");
+*/
+
+    StaticJsonDocument<2000> doc;
+    doc["deviceName"] = dname;
+    serializeJson(doc, Serial);
 }
 
 void HttpBluetoothReporter::reportServiceUUID(String uuid)
 {
-    Serial.print("Fzound ServiceUUID: ");
+    /* Serial.print("Fzound ServiceUUID: ");
     Serial.println(uuid);
-    Serial.println("");
+    Serial.println(""); */
 
-    taticJsonDocument<2000> doc;
+    StaticJsonDocument<2000> doc;
     doc["UUID"] = uuid;
     serializeJson(doc, Serial);
 }
@@ -25,17 +31,22 @@ void HttpBluetoothReporter::reportServiceUUID(String uuid)
 void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData)
 {
     Serial.println("Found another manufacturers beacon!");
-    Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
+    /* Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
     for (int i = 0; i < strManufacturerData.length(); i++)
     {
         Serial.printf("[%X]", cManufacturerData[i]);
     }
-    Serial.printf("\n");
+    Serial.printf("\n"); */
+
+    // This doesn't work very well. Simply reports a single "L"
+    StaticJsonDocument<2000> doc;
+    doc["manufacturerData"] = strManufacturerData;
+    serializeJson(doc, Serial);
 }
 
 void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower)
 {
-    Serial.println("zFound an iBeacon!");
+    /* Serial.println("zFound an iBeacon!");
 
     Serial.printf("ziBeacon Frame\n");
     Serial.printf("ID: %04X Major: %d Minor: %d UUID: %s Power: %d\n",
@@ -43,7 +54,7 @@ void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int min
                   major,
                   minor,
                   proximityUUID,
-                  signalPower);
+                  signalPower); */
 
     StaticJsonDocument<2000> doc;
     doc["manufacturerId"] = manufacturerId;
@@ -57,6 +68,8 @@ void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int min
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
+    // DynamicJsonDocument<20000> doc;
+    // this->doc = &doc;
     // this->doc = new DynamicJsonDocument(20000);
     // this->doc["banana"] = "fly"
 }
@@ -74,6 +87,7 @@ void HttpBluetoothReporter::scanDone()
     serializeJson(doc, Serial);
 }
 
-HttpBluetoothReporter::HttpBluetoothReporter()
+HttpBluetoothReporter::HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter)
 {
+    this->httpClientAdapter = httpClientAdapter;
 }

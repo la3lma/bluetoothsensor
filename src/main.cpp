@@ -28,13 +28,13 @@ void setup()
 {
   Serial.begin(115200);
 
-  httpClientAdapter = new HttpClientAdapter;
+  httpClientAdapter = new HttpClientAdapter("http://10.0.0.94:3000/update-sensor");
 
   Serial.println("Scanning...");
 
   // TODO: This is now a reporter that reports to standard out.  That is a bit silly, should
   //       instead report to a service on the intertubes.  We'll get there eventually.
-  myReporter = new HttpBluetoothReporter;
+  myReporter = new HttpBluetoothReporter(httpClientAdapter);
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
