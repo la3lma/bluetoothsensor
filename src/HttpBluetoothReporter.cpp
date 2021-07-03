@@ -2,11 +2,6 @@
 #include <Arduino.h>
 #include "BluetoothReporter.h"
 
-// #include <SPI.h>
-#include <WiFi.h>
-// #include <HttpClient.h>
-// #include <Ethernet.h>
-// #include <EthernetClient.h>
 
 void HttpBluetoothReporter::reportDeviceName(const char *dname)
 {
@@ -51,37 +46,14 @@ void HttpBluetoothReporter::initScan()
     Serial.println("zScan starting");
 }
 
+
 void HttpBluetoothReporter::scanDone()
 {
     Serial.println("zScan done");
 }
 
-void connectToWifiNetwork() {
- Serial.println("Initializing HTTP Bluetooth Reporter");
-
-     char *ssid     = "Telenor7329hos";
-     char *password = "adscljsaupblg";
-
-    delay(10);
-    Serial.println('\n');
-
-    WiFi.begin(ssid, password);
-    Serial.print("Connecting to ");
-    Serial.print(ssid);
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print('.');
-    }
-
-    Serial.println('\n');
-    Serial.println("Connection established!");
-    Serial.print("IP address:\t");
-    Serial.println(WiFi.localIP());
-}
 
 HttpBluetoothReporter::HttpBluetoothReporter()
 {
-   connectToWifiNetwork();
+
 }

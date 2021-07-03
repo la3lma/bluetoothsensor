@@ -15,15 +15,21 @@
 #include <BLEBeacon.h>
 
 #include "MyAdvertisedDeviceCallbacks.h"
+#include "HttpClientAdapter.h"
 
 int scanTime = 5; //In seconds
 BLEScan *pBLEScan;
 
 BluetoothReporter *myReporter;
 
+HttpClientAdapter *httpClientAdapter;
+
 void setup()
 {
   Serial.begin(115200);
+
+  httpClientAdapter = new HttpClientAdapter;
+
   Serial.println("Scanning...");
 
   // TODO: This is now a reporter that reports to standard out.  That is a bit silly, should
