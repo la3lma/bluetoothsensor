@@ -6,7 +6,7 @@
 
 // https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/SimplePost/SimplePost.ino
 
-const char *serverName = "http://10.0.0.75:3000/update-sensor"; // server address
+const char *serverName = "http://10.0.0.94:3000/update-sensor"; // server address
 
 // https://RandomNerdTutorials.com/esp32-http-get-post-arduino/
 void HttpClientAdapter::sendHttpPost()
@@ -15,6 +15,7 @@ void HttpClientAdapter::sendHttpPost()
     {
         WiFiClient client;
         HTTPClient http;
+         Serial.println("Preparing to send HTTP");
 
         // Your Domain name with URL path or IP address with path
         http.begin(client, serverName);
@@ -24,11 +25,13 @@ void HttpClientAdapter::sendHttpPost()
         // Data to send with HTTP POST
         String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&value1=24.25&value2=49.54&value3=1005.14";
         // Send HTTP POST request
-        int httpResponseCode = http.POST(httpRequestData);
+        Serial.println("... posting");
+
+        // int httpResponseCode = http.POST(httpRequestData);
 
         // If you need an HTTP request with a content type: application/json, use the following:
-        //http.addHeader("Content-Type", "application/json");
-        //int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
+        http.addHeader("Content-Type", "application/json");
+        int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
 
         // If you need an HTTP request with a content type: text/plain
         //http.addHeader("Content-Type", "text/plain");
@@ -72,8 +75,13 @@ void HttpClientAdapter::connectToWifiNetwork()
     Serial.println(WiFi.localIP());
 }
 
+
+void HttpClientAdapter::initializeHttpClient() {
+    // Maybe nuke this?
+}
+
 HttpClientAdapter::HttpClientAdapter()
 {
     this->connectToWifiNetwork();
-    // this->initializeHttpClient()
+    this->sendHttpPost();
 }

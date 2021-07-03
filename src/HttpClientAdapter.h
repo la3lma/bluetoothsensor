@@ -2,9 +2,11 @@
 
 class HttpClientAdapter
 {
-public:
-    HttpClientAdapter();
+private:
     void connectToWifiNetwork();
     void sendHttpPost();
+    void initializeHttpClient();
 
+public:
+    HttpClientAdapter();
 };
