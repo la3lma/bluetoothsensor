@@ -1,7 +1,8 @@
 
 #include <Arduino.h>
-#include "BluetoothReporter.h"
+#include <ArduinoJson.h>
 
+#include "BluetoothReporter.h"
 
 void HttpBluetoothReporter::reportDeviceName(const char *dname)
 {
@@ -15,6 +16,10 @@ void HttpBluetoothReporter::reportServiceUUID(String uuid)
     Serial.print("Fzound ServiceUUID: ");
     Serial.println(uuid);
     Serial.println("");
+
+    taticJsonDocument<2000> doc;
+    doc["UUID"] = uuid;
+    serializeJson(doc, Serial);
 }
 
 void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData)
@@ -39,21 +44,36 @@ void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int min
                   minor,
                   proximityUUID,
                   signalPower);
+
+    StaticJsonDocument<2000> doc;
+    doc["manufacturerId"] = manufacturerId;
+    doc["major"] = major;
+    doc["minor"] = minor;
+    doc["proximityUUID"] = proximityUUID;
+    doc["power"] = signalPower;
+    serializeJson(doc, Serial);
 }
 
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
+    // this->doc = new DynamicJsonDocument(20000);
+    // this->doc["banana"] = "fly"
 }
-
 
 void HttpBluetoothReporter::scanDone()
 {
     Serial.println("zScan done");
-}
+    // serializeJson(this->doc, Serial);
+    // free (this->doc);
+    // this->doc = NULL;
 
+    StaticJsonDocument<200> doc;
+    doc["sensor"] = "gps";
+    doc["time"] = 1351824120;
+    serializeJson(doc, Serial);
+}
 
 HttpBluetoothReporter::HttpBluetoothReporter()
 {
-
 }
