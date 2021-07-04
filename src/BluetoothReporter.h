@@ -7,7 +7,7 @@ class BluetoothReporter
 {
 public:
     virtual void reportDeviceName(const char *dname);
-    virtual void reportServiceUUID(String uuid);
+    virtual void reportServiceUUID(const char * uuid);
     virtual void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
     virtual void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
     virtual void initScan();
@@ -18,7 +18,7 @@ class SerialBluetoothReporter final : public BluetoothReporter
 {
 public:
     void reportDeviceName(const char *dname);
-    void reportServiceUUID(String uuid);
+    void reportServiceUUID(const char *uuid);
     void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
     void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
     void initScan();
@@ -26,20 +26,26 @@ public:
 };
 
 
+// TODO: Refactor this stuff.
 struct DeviceNameReport {
     char *deviceName;
+};
+
+struct ServiceUuidReport {
+    char *uuid;
 };
 
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
     HttpClientAdapter *httpClientAdapter;
-    std::list<DeviceNameReport *>  deviceNameReports;
+    std::list<DeviceNameReport   *>  deviceNameReports;
+    std::list<ServiceUuidReport  *>  serviceUuidReports;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
     void reportDeviceName(const char *dname);
-    void reportServiceUUID(String uuid);
+    void reportServiceUUID(const char * uuid);
     void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
     void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
     void initScan();

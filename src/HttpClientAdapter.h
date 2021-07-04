@@ -1,20 +1,19 @@
 #ifndef HttpClientAdapter_h
 #define HttpClientAdapter_h
 
-
-
 #include <Arduino.h>
 
 class HttpClientAdapter
 {
 private:
     void connectToWifiNetwork();
-    void sendHttpPost();
+    void sendHttpSamplePacket();
     void initializeHttpClient();
     const char *serverName;
 
 public:
     HttpClientAdapter(const char *serverName);
+    void sendJsonString(String report);
 };
 
 #endif /* HttpClientAdapter_h */

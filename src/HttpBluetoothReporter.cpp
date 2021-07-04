@@ -25,11 +25,11 @@ void HttpBluetoothReporter::reportDeviceName(const char *dname)
     this->deviceNameReports.push_back(dnr);
 }
 
-void HttpBluetoothReporter::reportServiceUUID(String uuid)
+void HttpBluetoothReporter::reportServiceUUID(const char *uuid)
 {
-    StaticJsonDocument<2000> doc;
-    doc["UUID"] = uuid;
-    serializeJson(doc, Serial);
+    ServiceUuidReport *dnr = new ServiceUuidReport();
+    dnr->uuid = safeCopy(uuid);
+    this->serviceUuidReports.push_back(dnr);
 }
 
 void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData)
@@ -70,18 +70,7 @@ void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int min
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
-    // DynamicJsonDocument<20000> doc;
-    // this->doc = &doc;
-    // this->doc = new DynamicJsonDocument(20000);
-    // this->doc["banana"] = "fly"
 
-    // DynamicJsonDocument doc(20000);
-    // this->doc = new(20000);
-
-    // DynamicJsonDocument ddoc = *(this->doc);
-    // (this->doc)["foo"] = "bar";
-
-    // this->things.clear();
     this->deviceNameReports.clear();
 }
 
@@ -116,6 +105,7 @@ void HttpBluetoothReporter::scanDone()
     Serial.println(json);
 
     // TBD: Send it over the wire
+    this->httpClientAdapter->sendJsonString(json);
 
     // Free the device name reports and the strings they use.
     // XXX std::list<DeviceNameReport *>::iterator dr_it;

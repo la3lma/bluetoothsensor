@@ -8,7 +8,7 @@ void SerialBluetoothReporter::reportDeviceName(const char *dname)
     Serial.println("");
 }
 
-void SerialBluetoothReporter::reportServiceUUID(String uuid)
+void SerialBluetoothReporter::reportServiceUUID(const char *uuid)
 {
     Serial.print("Found ServiceUUID: ");
     Serial.println(uuid);

@@ -1,20 +1,19 @@
 
-// #include <SPI.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "HttpClientAdapter.h"
 
 // https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/SimplePost/SimplePost.ino
 
-
 // https://RandomNerdTutorials.com/esp32-http-get-post-arduino/
-void HttpClientAdapter::sendHttpPost()
+// This method is intended to be used only for debugging, when thing sowk, drop it.
+void HttpClientAdapter::sendHttpSamplePacket()
 {
     if (WiFi.status() == WL_CONNECTED)
     {
         WiFiClient client;
         HTTPClient http;
-         Serial.println("Preparing to send HTTP");
+        Serial.println("Preparing to send HTTP");
 
         // Your Domain name with URL path or IP address with path
         http.begin(client, this->serverName);
@@ -74,14 +73,41 @@ void HttpClientAdapter::connectToWifiNetwork()
     Serial.println(WiFi.localIP());
 }
 
-
-void HttpClientAdapter::initializeHttpClient() {
+void HttpClientAdapter::initializeHttpClient()
+{
     // Maybe nuke this?
+}
+
+// TODO: Handle error situations (on-net/off net etc.)
+void HttpClientAdapter::sendJsonString(String jsonString)
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        WiFiClient client;
+        HTTPClient http;
+        Serial.println("Preparing to send HTTP");
+
+        // Your Domain name with URL path or IP address with path
+        http.begin(client, this->serverName);
+
+        http.addHeader("Content-Type", "application/json");
+        int httpResponseCode = http.POST(jsonString);
+
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+
+        // Free resources
+        http.end();
+    }
+    else
+    {
+        Serial.println("WiFi Disconnected");
+    }
 }
 
 HttpClientAdapter::HttpClientAdapter(const char *serverName)
 {
     this->serverName = serverName;
     this->connectToWifiNetwork();
-    this->sendHttpPost();
+    this->sendHttpSamplePacket();
 }
