@@ -26,11 +26,15 @@ public:
 };
 
 
+struct DeviceNameReport {
+    char *deviceName;
+};
+
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
     HttpClientAdapter *httpClientAdapter;
-    std::list<String>  things;
+    std::list<DeviceNameReport *>  deviceNameReports;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);

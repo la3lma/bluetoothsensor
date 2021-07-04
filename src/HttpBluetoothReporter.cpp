@@ -6,17 +6,23 @@
 
 #include "BluetoothReporter.h"
 
-
 // TODO:    For each of the incoming method calls, generate full JSON, and put it in a
 //          string (or a list of strings, whatever is the simplest).  That list of strings (or whatever),
 //          is then printed as an array of json objects, and that's how we serialize this stuff.
 //          C++ is such a shitty language.
 
+char *safeCopy(const char *arg)
+{
+    char *result = (char *)malloc(strlen(arg) + 1);
+    strcpy(result, arg);
+    return (result);
+}
+
 void HttpBluetoothReporter::reportDeviceName(const char *dname)
 {
-    StaticJsonDocument<2000> doc;
-    doc["deviceName"] = dname;
-    serializeJson(doc, Serial);
+    DeviceNameReport *dnr = new DeviceNameReport();
+    dnr->deviceName = safeCopy(dname);
+    this->deviceNameReports.push_back(dnr);
 }
 
 void HttpBluetoothReporter::reportServiceUUID(String uuid)
@@ -41,11 +47,12 @@ void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8
     doc["manufacturerData"] = strManufacturerData;
     String json;
     serializeJson(doc, json);
-    this->things.push_back(json);
+    // this->things.push_back(json);
 }
 
 void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower)
 {
+
     DynamicJsonDocument doc(2000);
     doc["manufacturerId"] = manufacturerId;
     doc["major"] = major;
@@ -57,7 +64,7 @@ void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int min
 
     String json;
     serializeJson(doc, json);
-    this->things.push_back(json);
+    // this->things.push_back(json);
 }
 
 void HttpBluetoothReporter::initScan()
@@ -74,20 +81,53 @@ void HttpBluetoothReporter::initScan()
     // DynamicJsonDocument ddoc = *(this->doc);
     // (this->doc)["foo"] = "bar";
 
-    this->things.clear();
+    // this->things.clear();
+    this->deviceNameReports.clear();
 }
 
 void HttpBluetoothReporter::scanDone()
 {
 
+    // TODO:
+    // * Build json doc
+    // * Build string based on json doc.
+    // * Free data used to build json doc.
+    // * Send data over the wire.
+    // * Free data just sent over the wire.
     Serial.println("zScan done<1>");
-    std::list<String>::iterator it;
-    for (it = this->things.begin(); it != this->things.end(); it++)
+
+    // Build json document
+
+    DynamicJsonDocument doc(20000);
+    JsonArray deviceNames = doc.createNestedArray("deviceNames");
+
+    std::list<DeviceNameReport *>::iterator dr_it;
+    for (dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
     {
-        Serial.println(*it);
-        // delete it;
+        DeviceNameReport *drn_ptr = *dr_it;
+        char *deviceName = drn_ptr->deviceName;
+        deviceNames.add(deviceName);
     }
-    Serial.println("zScan done<2>");
+
+    // Print json doc.
+    String json;
+    serializeJson(doc, json);
+    Serial.println("json doc is: ");
+    Serial.println(json);
+
+    // TBD: Send it over the wire
+
+    // Free the device name reports and the strings they use.
+    // XXX std::list<DeviceNameReport *>::iterator dr_it;
+    for (dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
+    {
+        DeviceNameReport *drn_ptr = *dr_it;
+        char *deviceName = drn_ptr->deviceName;
+
+        free(deviceName);
+        free(drn_ptr);
+    }
+    Serial.println("zScan done<3>");
 }
 
 HttpBluetoothReporter::HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter)
