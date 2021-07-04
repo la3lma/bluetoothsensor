@@ -1,6 +1,7 @@
 #include <Arduino.h>
-#include <ArduinoJson.h>
 #include "HttpClientAdapter.h"
+
+#include<list>
 
 class BluetoothReporter
 {
@@ -24,11 +25,12 @@ public:
     void scanDone();
 };
 
+
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
-    DynamicJsonDocument *doc;
     HttpClientAdapter *httpClientAdapter;
+    std::list<String>  things;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
