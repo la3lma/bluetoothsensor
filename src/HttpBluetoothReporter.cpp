@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <list>
+#include <map>
 #include <iterator>
 
 #include "BluetoothReporter.h"
@@ -20,9 +21,22 @@ char *safeCopy(const char *arg)
 
 void HttpBluetoothReporter::reportDeviceName(const char *dname)
 {
-    DeviceNameReport *dnr = new DeviceNameReport();
-    dnr->deviceName = safeCopy(dname);
-    this->deviceNameReports.push_back(dnr);
+    std::string key(dname);
+    if (this->deviceNameReports.find(key) == this->deviceNameReports.end())
+    {
+        Serial.print(" Did not find device name ");
+        Serial.print(dname);
+        Serial.println(", so adding it");
+        DeviceNameReport *dnr = new DeviceNameReport();
+        dnr->deviceName = safeCopy(dname);
+        this->deviceNameReports.insert({key, dnr});
+    }
+    else
+    {
+        Serial.print(" Already registred device name ");
+        Serial.print(dname);
+        Serial.println(", so skipping it");
+    }
 }
 
 void HttpBluetoothReporter::reportServiceUUID(const char *uuid)
@@ -32,6 +46,9 @@ void HttpBluetoothReporter::reportServiceUUID(const char *uuid)
     this->serviceUuidReports.push_back(dnr);
 }
 
+// This is in fact the majority of the data we see.  The reporting form is a bit shitty, so
+// we shouldn't use it, instead we should rewrite so that the relevant data is actually extracted
+// in a format that makes sense when we send it  over http to the home office.
 void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData)
 {
     Serial.println("Found another manufacturers beacon!");
@@ -80,6 +97,7 @@ void HttpBluetoothReporter::scanDone()
     // * Send data over the wire.
     // * Free data just sent over the wire.
     // * Rewrite data collection to only send one report per identified instance, per reporting cycle.
+    //    ... using this https://en.cppreference.com/w/cpp/container/map
     Serial.println("zScan done<1>");
 
     // Build json document
@@ -87,10 +105,10 @@ void HttpBluetoothReporter::scanDone()
     DynamicJsonDocument doc(20000);
     JsonArray deviceNames = doc.createNestedArray("deviceNames");
 
-    std::list<DeviceNameReport *>::iterator dr_it;
-    for (dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
+    // std::list<DeviceNameReport *>::iterator dr_it;
+    for (auto dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
     {
-        DeviceNameReport *drn_ptr = *dr_it;
+        DeviceNameReport *drn_ptr = dr_it->second;
         char *deviceName = drn_ptr->deviceName;
         deviceNames.add(deviceName);
     }
@@ -129,15 +147,14 @@ void HttpBluetoothReporter::scanDone()
 
     // Free the device name reports and the strings they use.
     // XXX std::list<DeviceNameReport *>::iterator dr_it;
-    for (dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
+    for (auto dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
     {
-        DeviceNameReport *ptr = *dr_it;
+        DeviceNameReport *ptr = dr_it->second;
         char *deviceName = ptr->deviceName;
 
         free(deviceName);
         free(ptr);
     }
-
 
     for (uuid_it = this->serviceUuidReports.begin(); uuid_it != this->serviceUuidReports.end(); uuid_it++)
     {
@@ -146,7 +163,6 @@ void HttpBluetoothReporter::scanDone()
         free(uuid);
         free(ptr);
     }
-
 
     for (ibeacon_it = this->iBeaconReports.begin(); ibeacon_it != this->iBeaconReports.end(); ibeacon_it++)
     {

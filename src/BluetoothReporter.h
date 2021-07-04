@@ -2,6 +2,8 @@
 #include "HttpClientAdapter.h"
 
 #include<list>
+#include<map>
+
 
 class BluetoothReporter
 {
@@ -35,12 +37,22 @@ struct ServiceUuidReport {
     char *uuid;
 };
 
+struct IBeaconReport {
+    char *proximityUuid;
+    int major;
+    int minor;
+    int signalPower;
+    int manufacturerId;
+};
+
+
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
     HttpClientAdapter *httpClientAdapter;
-    std::list<DeviceNameReport   *>  deviceNameReports;
+    std::map<std::string, DeviceNameReport   *>  deviceNameReports;
     std::list<ServiceUuidReport  *>  serviceUuidReports;
+    std::list<IBeaconReport      *>  iBeaconReports;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
