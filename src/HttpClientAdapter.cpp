@@ -19,9 +19,9 @@ void HttpClientAdapter::sendHttpSamplePacket()
         http.begin(client, this->serverName);
 
         // Specify content-type header
-        http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        // http.addHeader("Content-Type", "application/x-www-form-urlencoded");
         // Data to send with HTTP POST
-        String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&value1=24.25&value2=49.54&value3=1005.14";
+        // String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&value1=24.25&value2=49.54&value3=1005.14";
         // Send HTTP POST request
         Serial.println("... posting");
 
@@ -79,29 +79,41 @@ void HttpClientAdapter::initializeHttpClient()
 }
 
 // TODO: Handle error situations (on-net/off net etc.)
-void HttpClientAdapter::sendJsonString(String jsonString)
+int HttpClientAdapter::sendJsonString(const String &jsonString)
 {
     if (WiFi.status() == WL_CONNECTED)
     {
         WiFiClient client;
         HTTPClient http;
-        Serial.println("Preparing to send HTTP");
+        Serial.println("Preparing to zend HTTP");
+        Serial.println("Size of http json doc is: ");
+        Serial.println(jsonString.length());
 
         // Your Domain name with URL path or IP address with path
         http.begin(client, this->serverName);
 
         http.addHeader("Content-Type", "application/json");
-        int httpResponseCode = http.POST(jsonString);
 
+        int httpResponseCode = http.POST(jsonString);
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
 
         // Free resources
         http.end();
+
+        if (httpResponseCode < 0)
+        {
+            return httpResponseCode;
+        }
+        else
+        {
+            return jsonString.length();
+        }
     }
     else
     {
         Serial.println("WiFi Disconnected");
+        return 0;
     }
 }
 
@@ -110,4 +122,58 @@ HttpClientAdapter::HttpClientAdapter(const char *serverName)
     this->serverName = serverName;
     this->connectToWifiNetwork();
     this->sendHttpSamplePacket();
+    this->sendJsonString("{\"clientType\":\"experimental\"}");
+    String str("{\"clientType\":\"evenMoreExperimental\"}");
+    this->sendJsonString(str);
+
+/* DELETE THIS
+    // Now try to find the MTU for the packet sender
+    // Use binary search.
+
+    int min = 1;
+    int max = 20000;
+
+    while ((min + 1) < max)
+    {
+        int pivot = min + ((max - min) / 2);
+
+        Serial.print("Min = ");
+        Serial.println(min);
+        Serial.print("Max = ");
+        Serial.println(max);
+        Serial.print("pivot = ");
+        Serial.println(pivot);
+
+        String s = "";
+        for (int i = 0 ; i < pivot ; i++){
+            s = s + "*";
+        }
+        
+        int slength = s.length();
+        Serial.print("slength = ");
+        Serial.println(slength);
+
+        int sentLength = this->sendJsonString(s);
+
+        if (sentLength < 1)
+        {
+            continue;
+        }
+
+        if (sentLength == pivot)
+        {
+            min = pivot;
+        }
+        else
+        {
+            max = pivot;
+        }
+    }
+
+    Serial.println("===->");
+    Serial.print("Min = ");
+    Serial.println(min);
+    Serial.print("Max = ");
+    Serial.println(max);
+    */
 }

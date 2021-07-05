@@ -1,31 +1,14 @@
+#ifndef BluetoothReporter_h
+#define BluetoothReporter_h
+
+
 #include <Arduino.h>
+#include <ArduinoJson.h>
+
 #include "HttpClientAdapter.h"
 
 #include<list>
 #include<map>
-
-
-class BluetoothReporter
-{
-public:
-    virtual void reportDeviceName(const char *dname);
-    virtual void reportServiceUUID(const char * uuid);
-    virtual void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
-    virtual void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
-    virtual void initScan();
-    virtual void scanDone();
-};
-
-class SerialBluetoothReporter final : public BluetoothReporter
-{
-public:
-    void reportDeviceName(const char *dname);
-    void reportServiceUUID(const char *uuid);
-    void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
-    void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
-    void initScan();
-    void scanDone();
-};
 
 
 // TODO: Refactor this stuff.
@@ -46,20 +29,72 @@ struct IBeaconReport {
 };
 
 
+class BLEBasicReport final {
+    public:
+    std::string bleAddress;
+    uint16_t appearance;
+    std::string manufacturerData;
+    std::string name;
+    std::string serviceUUID;
+    int rssi;
+    int8_t txPower;
+
+    std::list<IBeaconReport *> iBeaconReports;
+
+    /*   TODO: These are the parts we're not reporting yet, because we 
+        don't know how to 
+	BLEScan*    getScan();
+	std::string getServiceData();
+	std::string getServiceData(int i);
+
+	BLEUUID     getServiceDataUUID();
+	BLEUUID     getServiceDataUUID(int i);
+	BLEUUID     getServiceUUID();
+	BLEUUID     getServiceUUID(int i);
+
+	int         getServiceDataCount;
+	int         getServiceDataUUIDCount;
+	int         getServiceUUIDCount;
+
+	uint8_t* 	getPayload();
+	size_t		getPayloadLength();
+
+    */
+    bool haveAppearance;
+    bool haveManufacturerData;
+    bool haveName;
+    bool haveRSSI;
+    bool haveServiceData;
+    bool haveServiceUUID;
+    bool haveTXPower;
+
+    void toJson(JsonObject json);
+};
+
+class BluetoothReporter
+{
+public:
+    virtual void initScan();
+    virtual void scanDone();
+    virtual void bluBasicReport(BLEBasicReport *report);
+};
+
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
-    HttpClientAdapter *httpClientAdapter;
-    std::map<std::string, DeviceNameReport   *>  deviceNameReports;
-    std::list<ServiceUuidReport  *>  serviceUuidReports;
-    std::list<IBeaconReport      *>  iBeaconReports;
+    HttpClientAdapter                 *httpClientAdapter;
+    std::list<BLEBasicReport      *>  reports;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
-    void reportDeviceName(const char *dname);
-    void reportServiceUUID(const char * uuid);
-    void reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData);
-    void reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUUID, int signalPower);
     void initScan();
     void scanDone();
+    void bluBasicReport(BLEBasicReport *report);
+
 };
+
+
+char *safeCopy(const char *arg);
+
+#endif
+

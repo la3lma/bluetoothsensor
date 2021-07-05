@@ -1,5 +1,3 @@
-
-
 #include <Arduino.h>
 
 #include <BLEDevice.h>
@@ -14,22 +12,90 @@
 
 #define ENDIAN_CHANGE_U16(x) ((((x)&0xFF00) >> 8) + (((x)&0xFF) << 8))
 
+/*
+char *safeCopy(const char *arg)
+{
+    char *result = (char *)malloc(strlen(arg) + 1);
+    strcpy(result, arg);
+    return (result);
+}
+*/
 
 void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 {
 
-    // This first part seems to be generic reporting of bluetooth data
+    std::string adv = advertisedDevice.toString();
+    Serial.println("Serialized representation of beacon");
+    Serial.println(adv.c_str());
+
+    // Build the basic report (raw data). We'll later augment with
+    // specialized data interpretations if relevant (maybe, or perhaps we should just send
+    // everything along to the backend?)
+    BLEBasicReport *report = new BLEBasicReport;
+
+    report->bleAddress = safeCopy(advertisedDevice.getAddress().toString().c_str()); 
+    if (advertisedDevice.haveAppearance())
+    {
+        report->appearance = advertisedDevice.getAppearance();
+        report->haveAppearance = true;
+    }
+    else
+    {
+        report->haveAppearance = false;
+    }
+
     if (advertisedDevice.haveName())
     {
-        this->myReporter->reportDeviceName(advertisedDevice.getName().c_str());
+        report->name = advertisedDevice.getName().c_str();
+        report->haveName = true;
+    }
+    else
+    {
+        report->haveName = false;
+    }
+
+    if (advertisedDevice.haveRSSI())
+    {
+        report->rssi = advertisedDevice.getRSSI();
+        report->haveRSSI = true;
+    }
+    else
+    {
+        report->haveRSSI = false;
+    }
+
+    if (advertisedDevice.haveTXPower())
+    {
+        report->txPower = advertisedDevice.getTXPower();
+        report->haveTXPower = true;
+    }
+    else
+    {
+        report->haveTXPower = false;
+    }
+
+    if (advertisedDevice.haveServiceData())
+    {
+        report->haveServiceData = true;
+        // TODO: Get actual data
+    }
+    else
+    {
+        report->haveServiceData = false;
     }
 
     if (advertisedDevice.haveServiceUUID())
     {
+        report->haveServiceUUID = true;
         BLEUUID devUUID = advertisedDevice.getServiceUUID();
-         this->myReporter->reportServiceUUID(devUUID.toString().c_str());
+        report->serviceUUID = safeCopy(devUUID.toString().c_str()); // TODO: Pick out real data
     }
     else
+    {
+        report->haveServiceUUID = false;
+    }
+
+    if (!report->haveServiceUUID)
     {
         if (advertisedDevice.haveManufacturerData() == true)
         {
@@ -43,20 +109,36 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
             {
                 BLEBeacon oBeacon = BLEBeacon();
                 oBeacon.setData(strManufacturerData);
-                 this->myReporter->reportIBeacon(oBeacon.getManufacturerId(), ENDIAN_CHANGE_U16(oBeacon.getMajor()),
-                              ENDIAN_CHANGE_U16(oBeacon.getMinor()),
-                              oBeacon.getProximityUUID().toString().c_str(),
-                              oBeacon.getSignalPower());
+
+                // New
+                IBeaconReport *ibr = new IBeaconReport();
+                ibr->manufacturerId = oBeacon.getManufacturerId();
+                ibr->major = ENDIAN_CHANGE_U16(oBeacon.getMajor());
+                ibr->minor = ENDIAN_CHANGE_U16(oBeacon.getMinor());
+                ibr->signalPower = oBeacon.getSignalPower();
+                ibr->proximityUuid = safeCopy(oBeacon.getProximityUUID().toString().c_str());
+
+                report->iBeaconReports.push_back(ibr);
             }
-            else
-            {
-                 this->myReporter->reportOBeacon(strManufacturerData, cManufacturerData);
-            }
+           // else
+           // {
+           //     // Old
+           //    //  this->myReporter->reportOBeacon(strManufacturerData, cManufacturerData);
+ //
+            //     // New  (Put it in a string instead)  FIX LATER
+             //    /*  Serial.println("Found another manufacturers beacon!");
+              //   Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
+              //   int outputLength = 0;
+              //   for (int i = 0; i < strManufacturerData.length(); i++)
+              //   {
+              //       Serial.printf("[%X]", cManufacturerData[i]);
+             //    }
+              //   Serial.println(); */
+            // }
         }
-        return;
     }
 
-
+    this->myReporter->bluBasicReport(report);
 
     // This latter part seems to be looking at the payload and parsing that somehow
     // in particuluar, assuming some "eddistone" type of bluetooth  beacon device

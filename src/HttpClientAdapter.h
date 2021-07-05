@@ -13,7 +13,7 @@ private:
 
 public:
     HttpClientAdapter(const char *serverName);
-    void sendJsonString(String report);
+    int sendJsonString(const String &report);
 };
 
 #endif /* HttpClientAdapter_h */

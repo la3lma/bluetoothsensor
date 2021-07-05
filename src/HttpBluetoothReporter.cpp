@@ -19,97 +19,65 @@ char *safeCopy(const char *arg)
     return (result);
 }
 
-void HttpBluetoothReporter::reportDeviceName(const char *dname)
-{
-    std::string key(dname);
-    if (this->deviceNameReports.find(key) == this->deviceNameReports.end())
-    {
-        DeviceNameReport *value = new DeviceNameReport();
-        value->deviceName = safeCopy(dname);
-        this->deviceNameReports.insert({key, value});
-    }
-}
-
-void HttpBluetoothReporter::reportServiceUUID(const char *uuid)
-{
-    std::string key(uuid);
-    if (this->serviceUuidReports.find(key) == this->serviceUuidReports.end())
-    {
-        ServiceUuidReport *value = new ServiceUuidReport();
-        value->uuid = safeCopy(uuid);
-        this->serviceUuidReports.insert({key, value});
-    }
-}
-
-// This is in fact the majority of the data we see.  The reporting form is a bit useless, so
-// we shouldn't use it, instead we should rewrite so that the relevant data is actually extracted
-// in a format that makes sense when we send it  over http to the home office.
-void HttpBluetoothReporter::reportOBeacon(std::string strManufacturerData, uint8_t *cManufacturerData)
-{
-    Serial.println("Found another manufacturers beacon!");
-    /* Serial.printf("strManufacturerData: %d ", strManufacturerData.length());
-    for (int i = 0; i < strManufacturerData.length(); i++)
-    {
-        Serial.printf("[%X]", cManufacturerData[i]);
-    }
-    Serial.printf("\n"); */
-
-    // This doesn't work very well. Simply reports a single "L"
-    StaticJsonDocument<2000> doc;
-    doc["manufacturerData"] = strManufacturerData;
-    String json;
-    serializeJson(doc, json);
-    // this->things.push_back(json);
-}
-
-void HttpBluetoothReporter::reportIBeacon(int manufacturerId, int major, int minor, const char *proximityUuid, int signalPower)
-{
-    IBeaconReport *ibr = new IBeaconReport();
-    ibr->manufacturerId = manufacturerId;
-    ibr->major = major;
-    ibr->minor = minor;
-    ibr->signalPower = signalPower;
-    ibr->proximityUuid = safeCopy(proximityUuid);
-
-    this->iBeaconReports.push_back(ibr);
-}
-
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
 
-    //
-    // Free the device name reports and the strings they use.
-    //
-    for (auto it = this->deviceNameReports.begin(); it != this->deviceNameReports.end(); it++)
+    /*
+    for (auto it = this->reports.begin(); it != this->reports.end(); it++)
     {
-        DeviceNameReport *ptr = it->second;
-        char *deviceName = ptr->deviceName;
-        free(deviceName);
-        free(ptr);
+        // THis is a bad memory leak
+       //  BLEBasicReport *ptr = *it;
+    }*/
+
+    this->reports.clear();
+}
+
+void HttpBluetoothReporter::bluBasicReport(BLEBasicReport *report)
+{
+    this->reports.push_back(report);
+}
+
+void BLEBasicReport::toJson(JsonObject json)
+{
+
+    json["bleAddress"] = this->bleAddress;
+
+    if (this->haveName)
+    {
+        json["name"] = this->name;
     }
 
-    for (auto it = this->serviceUuidReports.begin(); it != this->serviceUuidReports.end(); it++)
+    if (this->haveRSSI)
     {
-        ServiceUuidReport *ptr = it->second;
-        char *uuid = ptr->uuid;
-        free(uuid);
-        free(ptr);
+        json["rssi"] = this->rssi;
     }
+
+    if (this->haveServiceUUID)
+    {
+        json["serviceUUID"] = this->serviceUUID.c_str();
+    }
+
+    if (this->haveTXPower)
+    {
+        json["haveTXPower"] = this->txPower;
+    }
+
+    // TODO : Missing servicedata
+
+    JsonArray iBeaconReports = json.createNestedArray("iBeaconReports");
+    // std::list<IBeaconReport *>::iterator it;
 
     for (auto it = this->iBeaconReports.begin(); it != this->iBeaconReports.end(); it++)
     {
         IBeaconReport *ptr = *it;
-        char *uuid = ptr->proximityUuid;
-        free(uuid);
-        free(ptr);
+        JsonObject iBeacon = iBeaconReports.createNestedObject();
+        iBeacon["manufacturerId"] = ptr->manufacturerId;
+        iBeacon["major"] = ptr->major;
+        iBeacon["minor"] = ptr->minor;
+        iBeacon["proximityUUID"] = ptr->proximityUuid;
+        iBeacon["power"] = ptr->signalPower;
     }
-
-    // TODO: Figure out if we can do the deletions we do above, using the
-    //       destructor method somehow?
-    this->deviceNameReports.clear();
-    this->serviceUuidReports.clear();
-    this->iBeaconReports.clear();
 }
 
 void HttpBluetoothReporter::scanDone()
@@ -125,47 +93,52 @@ void HttpBluetoothReporter::scanDone()
     //    ... using this https://en.cppreference.com/w/cpp/container/map
     Serial.println("zScan done<1>");
 
-    // Build json document
 
-    DynamicJsonDocument doc(20000);
-    JsonArray deviceNames = doc.createNestedArray("deviceNames");
-
-    for (auto dr_it = this->deviceNameReports.begin(); dr_it != this->deviceNameReports.end(); dr_it++)
+    // There is a bug in the wifi/http clients that stops long reports from being written.
+    // consequently we work around that by splitting the reports into multiple reports.
+    // The stride parmeter determines how many bluetooth devices to include in each report,
+    // it is a heuristically determined number.   The best solution would be to 
+    // get rid of whatever silly reason is stopping the probram from writing long
+    // reports, but until we fix that, thits will at least send some reports
+    
+    const int stride = 10;
+    for (int i = 1; i < this->reports.size(); i += stride)
     {
-        DeviceNameReport *drn_ptr = dr_it->second;
-        char *deviceName = drn_ptr->deviceName;
-        deviceNames.add(deviceName);
+
+        // Build json document
+
+        DynamicJsonDocument doc(20000);
+
+        JsonArray reports = doc.createNestedArray("reports");
+
+        int j = i;
+        int k = stride;
+        for (auto it = this->reports.begin(); it != this->reports.end(); it++)
+        {
+            
+            if (j > 0 && --j > 0) {
+                continue;
+            }
+            BLEBasicReport *ptr = *it;
+            JsonObject nested = reports.createNestedObject();
+            ptr->toJson(nested);
+
+            if (--k < 0) {
+                break;
+            }
+        }
+
+        // Print json doc.
+        String json;
+        serializeJsonPretty(doc, json);
+        Serial.println("json doc is: ");
+        Serial.println(json);
+        Serial.println("Size of json doc doc is: ");
+        Serial.println(json.length());
+
+        // Send it over the wire
+        this->httpClientAdapter->sendJsonString(json);
     }
-
-    JsonArray uuids = doc.createNestedArray("uuids");
-    for (auto uuid_it = this->serviceUuidReports.begin(); uuid_it != this->serviceUuidReports.end(); uuid_it++)
-    {
-        ServiceUuidReport *ptr = uuid_it->second;
-        char *uuid = ptr->uuid;
-        uuids.add(uuid);
-    }
-
-    JsonObject iBeacons = doc.createNestedObject("iBeacons");
-    for (auto ibeacon_it = this->iBeaconReports.begin(); ibeacon_it != this->iBeaconReports.end(); ibeacon_it++)
-    {
-        IBeaconReport *ptr = *ibeacon_it;
-        char *proximityUuid = safeCopy(ptr->proximityUuid);
-
-        iBeacons["manufacturerId"] = ptr->manufacturerId;
-        iBeacons["major"] = ptr->major;
-        iBeacons["minor"] = ptr->minor;
-        iBeacons["proximityUUID"] = proximityUuid;
-        iBeacons["power"] = ptr->signalPower;
-    }
-
-    // Print json doc.
-    String json;
-    serializeJsonPretty(doc, json);
-    Serial.println("json doc is: ");
-    Serial.println(json);
-
-    // Send it over the wire
-    this->httpClientAdapter->sendJsonString(json);
 
     Serial.println("zScan done<3>");
 }
