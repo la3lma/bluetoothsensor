@@ -22,20 +22,7 @@ char *safeCopy(const char *arg)
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
-
-    /*
-    for (auto it = this->reports.begin(); it != this->reports.end(); it++)
-    {
-        // THis is a bad memory leak
-       //  BLEBasicReport *ptr = *it;
-    }*/
-
     this->reports.clear();
-}
-
-void HttpBluetoothReporter::bluBasicReport(BLEBasicReport *report)
-{
-    this->reports.push_back(report);
 }
 
 void BLEBasicReport::toJson(JsonObject json)
@@ -65,19 +52,35 @@ void BLEBasicReport::toJson(JsonObject json)
 
     // TODO : Missing servicedata
 
-    JsonArray iBeaconReports = json.createNestedArray("iBeaconReports");
-    // std::list<IBeaconReport *>::iterator it;
-
-    for (auto it = this->iBeaconReports.begin(); it != this->iBeaconReports.end(); it++)
+    if (!this->iBeaconReports.empty())
     {
-        IBeaconReport *ptr = *it;
-        JsonObject iBeacon = iBeaconReports.createNestedObject();
-        iBeacon["manufacturerId"] = ptr->manufacturerId;
-        iBeacon["major"] = ptr->major;
-        iBeacon["minor"] = ptr->minor;
-        iBeacon["proximityUUID"] = ptr->proximityUuid;
-        iBeacon["power"] = ptr->signalPower;
+        JsonArray iBeaconReports = json.createNestedArray("iBeaconReports");
+        for (auto it = this->iBeaconReports.begin(); it != this->iBeaconReports.end(); it++)
+        {
+            IBeaconReport *ptr = *it;
+            JsonObject iBeacon = iBeaconReports.createNestedObject();
+            iBeacon["manufacturerId"] = ptr->manufacturerId;
+            iBeacon["major"] = ptr->major;
+            iBeacon["minor"] = ptr->minor;
+            iBeacon["proximityUUID"] = ptr->proximityUuid;
+            iBeacon["power"] = ptr->signalPower;
+        }
     }
+}
+
+bool HttpBluetoothReporter::hasKey(std::string &key)
+{
+    return (this->reports.find(key) != this->reports.end());
+}
+
+BLEBasicReport * HttpBluetoothReporter::registerNewReport(std::string bleAddress)
+{
+
+    BLEBasicReport *report = new BLEBasicReport();
+    report->bleAddress = bleAddress;
+
+    this->reports.insert({bleAddress, report});
+    return report;
 }
 
 void HttpBluetoothReporter::scanDone()
@@ -93,14 +96,14 @@ void HttpBluetoothReporter::scanDone()
     //    ... using this https://en.cppreference.com/w/cpp/container/map
     Serial.println("zScan done<1>");
 
-
     // There is a bug in the wifi/http clients that stops long reports from being written.
     // consequently we work around that by splitting the reports into multiple reports.
     // The stride parmeter determines how many bluetooth devices to include in each report,
-    // it is a heuristically determined number.   The best solution would be to 
+    // it is a heuristically determined number (a.k.a. "wild guess").
+    // The best solution would be to
     // get rid of whatever silly reason is stopping the probram from writing long
     // reports, but until we fix that, thits will at least send some reports
-    
+
     const int stride = 10;
     for (int i = 1; i < this->reports.size(); i += stride)
     {
@@ -109,21 +112,27 @@ void HttpBluetoothReporter::scanDone()
 
         DynamicJsonDocument doc(20000);
 
-        JsonArray reports = doc.createNestedArray("reports");
+        JsonArray reports = doc.createNestedArray("bleReports");
 
         int j = i;
         int k = stride;
         for (auto it = this->reports.begin(); it != this->reports.end(); it++)
         {
-            
-            if (j > 0 && --j > 0) {
+            if (j > 0 && --j > 0)
+            {
                 continue;
             }
-            BLEBasicReport *ptr = *it;
-            JsonObject nested = reports.createNestedObject();
-            ptr->toJson(nested);
 
-            if (--k < 0) {
+            const std::string key = it->first;
+            Serial.print("====---->");
+            Serial.println(key.c_str());
+
+            BLEBasicReport ptr = *(it->second);
+            JsonObject nested = reports.createNestedObject();
+            ptr.toJson(nested);
+
+            if (--k < 0)
+            {
                 break;
             }
         }

@@ -1,26 +1,27 @@
 #ifndef BluetoothReporter_h
 #define BluetoothReporter_h
 
-
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
 #include "HttpClientAdapter.h"
 
-#include<list>
-#include<map>
-
+#include <list>
+#include <map>
 
 // TODO: Refactor this stuff.
-struct DeviceNameReport {
+struct DeviceNameReport
+{
     char *deviceName;
 };
 
-struct ServiceUuidReport {
+struct ServiceUuidReport
+{
     char *uuid;
 };
 
-struct IBeaconReport {
+struct IBeaconReport
+{
     char *proximityUuid;
     int major;
     int minor;
@@ -28,9 +29,9 @@ struct IBeaconReport {
     int manufacturerId;
 };
 
-
-class BLEBasicReport final {
-    public:
+class BLEBasicReport final
+{
+public:
     std::string bleAddress;
     uint16_t appearance;
     std::string manufacturerData;
@@ -76,25 +77,26 @@ class BluetoothReporter
 public:
     virtual void initScan();
     virtual void scanDone();
-    virtual void bluBasicReport(BLEBasicReport *report);
+
+    virtual bool hasKey(std::string &bleAddress);
+    virtual BLEBasicReport * registerNewReport(std::string bleAddress);
 };
 
 class HttpBluetoothReporter final : public BluetoothReporter
 {
 private:
-    HttpClientAdapter                 *httpClientAdapter;
-    std::list<BLEBasicReport      *>  reports;
+    HttpClientAdapter *httpClientAdapter;
+    std::map<std::string, BLEBasicReport *> reports;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
     void initScan();
     void scanDone();
-    void bluBasicReport(BLEBasicReport *report);
 
+    bool hasKey(std::string &bleAddress);
+    BLEBasicReport * registerNewReport(std::string bleAddress);
 };
-
 
 char *safeCopy(const char *arg);
 
 #endif
-
