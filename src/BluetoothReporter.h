@@ -37,6 +37,7 @@ public:
     std::string manufacturerData;
     std::string name;
     std::string serviceUUID;
+    std::string serviceUUIDVendorCode;
     int rssi;
     int8_t txPower;
 
@@ -75,7 +76,7 @@ public:
 class BluetoothReporter
 {
 public:
-    virtual void initScan();
+    virtual void initScan(String wifiMAC);
     virtual void scanDone();
 
     virtual bool hasKey(std::string &bleAddress);
@@ -87,10 +88,11 @@ class HttpBluetoothReporter final : public BluetoothReporter
 private:
     HttpClientAdapter *httpClientAdapter;
     std::map<std::string, BLEBasicReport *> reports;
+    std::string wifiMAC;
 
 public:
     HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
-    void initScan();
+    void initScan(String wifiMAC);
     void scanDone();
 
     bool hasKey(std::string &bleAddress);

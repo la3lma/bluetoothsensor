@@ -29,9 +29,10 @@ char *safeStringCopy(std::string arg)
 }
 
 
-void HttpBluetoothReporter::initScan()
+void HttpBluetoothReporter::initScan(String wifiMAC)
 {
     Serial.println("zScan starting");
+    this->wifiMAC = wifiMAC.c_str();
     this->reports.clear();
 }
 
@@ -54,6 +55,7 @@ void BLEBasicReport::toJson(JsonObject json)
     if (this->haveServiceUUID)
     {
         json["serviceUUID"] = this->serviceUUID;
+        json["serviceUUIDVendorCode"] = this->serviceUUIDVendorCode;
     }
 
     if (this->haveTXPower)
@@ -122,6 +124,18 @@ void HttpBluetoothReporter::scanDone()
         // Build json document
 
         DynamicJsonDocument doc(20000);
+
+        // A json object to identify this particular scanner
+        doc["scannerID"]["wifiMAC"] = this->wifiMAC;
+
+
+
+        // TBD:
+        //   ... add a "wifiReports" element that reports on the
+        //   wifi connections we see at this point (some magic may be
+        //   needed to avoid the overrun issue handled by the nested for-loops)
+        //   we see here.
+
 
         JsonArray reports = doc.createNestedArray("bleReports");
 

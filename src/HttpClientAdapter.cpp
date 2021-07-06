@@ -71,6 +71,8 @@ void HttpClientAdapter::connectToWifiNetwork()
     Serial.println("Connection established!");
     Serial.print("IP address:\t");
     Serial.println(WiFi.localIP());
+    Serial.print("ESP board MAC address:\t");
+    Serial.println(WiFi.macAddress());
 }
 
 void HttpClientAdapter::initializeHttpClient()

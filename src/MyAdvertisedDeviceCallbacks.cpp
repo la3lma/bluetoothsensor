@@ -97,6 +97,9 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
         BLEUUID devUUID = advertisedDevice.getServiceUUID();
         rr->serviceUUID = devUUID.toString().c_str(); // ???    safeStringCopy(devUUID.toString());
         // TODO: Pick out vendor code and serve separately.
+
+        rr->serviceUUIDVendorCode = rr->serviceUUID.substr(4,4);
+
     }
     else
     {

@@ -13,11 +13,13 @@
 #include <BLEEddystoneURL.h>
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
+#include <WiFi.h>
 
 #include "MyAdvertisedDeviceCallbacks.h"
 #include "HttpClientAdapter.h"
 
 int scanTime = 5; //In seconds
+int timeBetweenScans = 2000; // In milliseconds
 BLEScan *pBLEScan;
 
 BluetoothReporter *myReporter;
@@ -32,11 +34,9 @@ void setup()
 
   Serial.println("Scanning...");
 
-  // TODO: This is now a reporter that reports to standard out.  That is a bit silly, should
-  //       instead report to a service on the intertubes.  We'll get there eventually.
   myReporter = new HttpBluetoothReporter(httpClientAdapter);
 
-  BLEDevice::init("");
+  BLEDevice::init("bluetoothScanner");
   pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(myReporter));
   pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
@@ -47,12 +47,12 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  myReporter->initScan();
+  myReporter->initScan(WiFi.macAddress());
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   Serial.print("Devices found: ");
   Serial.println(foundDevices.getCount());
   Serial.println("Scan done!");
   myReporter->scanDone();
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
-  delay(2000);
+  delay(timeBetweenScans);
 }
