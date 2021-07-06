@@ -26,81 +26,84 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
     // within the same sampling period, so we can live with that.
     std::string bleAddress = advertisedDevice.getAddress().toString();
 
-    if (this->myReporter->hasKey(bleAddress)) {
+    if (this->myReporter->hasKey(bleAddress))
+    {
         return;
     }
-
 
     // Build the basic report (raw data). We'll later augment with
     // specialized data interpretations if relevant (maybe, or perhaps we should just send
     // everything along to the backend?)
-    BLEBasicReport report = *(this->myReporter->registerNewReport(bleAddress));
-
-    Serial.print("*****>");
-    Serial.println(report.name.c_str());
+    BLEBasicReport *rr = this->myReporter->registerNewReport(bleAddress);
+    
 
     if (advertisedDevice.haveAppearance())
     {
-        report.appearance = advertisedDevice.getAppearance();
-        report.haveAppearance = true;
+        rr->appearance = advertisedDevice.getAppearance();
+        rr->haveAppearance = true;
     }
     else
     {
-        report.haveAppearance = false;
+        rr->haveAppearance = false;
     }
 
     if (advertisedDevice.haveName())
     {
-        report.name = advertisedDevice.getName().c_str();
-        report.haveName = true;
+        rr->name = safeStringCopy(advertisedDevice.getName());
+        rr->haveName = true;
     }
     else
     {
-        report.haveName = false;
+        rr->haveName = false;
     }
 
     if (advertisedDevice.haveRSSI())
     {
-        report.rssi = advertisedDevice.getRSSI();
-        report.haveRSSI = true;
+        Serial.println("Reporting rssi");
+
+        rr->rssi = advertisedDevice.getRSSI();
+        rr->haveRSSI = true;
     }
     else
     {
-        report.haveRSSI = false;
+        rr->haveRSSI = false;
     }
 
     if (advertisedDevice.haveTXPower())
     {
-        report.txPower = advertisedDevice.getTXPower();
-        report.haveTXPower = true;
+        Serial.println("Reporting txpower");
+        rr->txPower = advertisedDevice.getTXPower();
+        rr->haveTXPower = true;
     }
     else
     {
-        report.haveTXPower = false;
+        rr->haveTXPower = false;
     }
 
     if (advertisedDevice.haveServiceData())
     {
-        report.haveServiceData = true;
+        rr->haveServiceData = true;
         // TODO: Get actual data
     }
     else
     {
-        report.haveServiceData = false;
+        rr->haveServiceData = false;
     }
 
     if (advertisedDevice.haveServiceUUID())
     {
-        report.haveServiceUUID = true;
+        Serial.println("Reporting uuid");
+        rr->haveServiceUUID = true;
         BLEUUID devUUID = advertisedDevice.getServiceUUID();
-        report.serviceUUID = safeCopy(devUUID.toString().c_str()); // TODO: Pick out real data
+        rr->serviceUUID = devUUID.toString().c_str(); // ???    safeStringCopy(devUUID.toString());
+        // TODO: Pick out vendor code and serve separately.
     }
     else
     {
-        report.haveServiceUUID = false;
+        rr->haveServiceUUID = false;
     }
 
-    if (!report.haveServiceUUID)
+    if (!rr->haveServiceUUID)
     {
         if (advertisedDevice.haveManufacturerData() == true)
         {
@@ -116,14 +119,15 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
                 oBeacon.setData(strManufacturerData);
 
                 // New
+                Serial.println("Reporting ibeacon");
                 IBeaconReport *ibr = new IBeaconReport();
                 ibr->manufacturerId = oBeacon.getManufacturerId();
                 ibr->major = ENDIAN_CHANGE_U16(oBeacon.getMajor());
                 ibr->minor = ENDIAN_CHANGE_U16(oBeacon.getMinor());
                 ibr->signalPower = oBeacon.getSignalPower();
-                ibr->proximityUuid = safeCopy(oBeacon.getProximityUUID().toString().c_str());
+                ibr->proximityUuid = oBeacon.getProximityUUID().toString().c_str();
 
-                report.iBeaconReports.push_back(ibr);
+                rr->iBeaconReports.push_back(ibr);
             }
             // else
             // {
@@ -142,8 +146,6 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
             // }
         }
     }
-
-    
 
     // This latter part seems to be looking at the payload and parsing that somehow
     // in particuluar, assuming some "eddistone" type of bluetooth  beacon device

@@ -22,7 +22,7 @@ struct ServiceUuidReport
 
 struct IBeaconReport
 {
-    char *proximityUuid;
+    std::string proximityUuid;
     int major;
     int minor;
     int signalPower;
@@ -98,5 +98,8 @@ public:
 };
 
 char *safeCopy(const char *arg);
+
+char *safeStringCopy(std::string arg);
+
 
 #endif

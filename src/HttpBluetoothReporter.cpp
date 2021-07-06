@@ -19,6 +19,16 @@ char *safeCopy(const char *arg)
     return (result);
 }
 
+
+char *safeStringCopy(std::string arg)
+{
+    char *cstr = (char *)arg.c_str();
+    char *result = (char *)malloc(strlen(cstr) + 1);
+    strcpy(result, cstr);
+    return (result);
+}
+
+
 void HttpBluetoothReporter::initScan()
 {
     Serial.println("zScan starting");
@@ -32,6 +42,7 @@ void BLEBasicReport::toJson(JsonObject json)
 
     if (this->haveName)
     {
+        Serial.print("Json-printing name");
         json["name"] = this->name;
     }
 
@@ -42,7 +53,7 @@ void BLEBasicReport::toJson(JsonObject json)
 
     if (this->haveServiceUUID)
     {
-        json["serviceUUID"] = this->serviceUUID.c_str();
+        json["serviceUUID"] = this->serviceUUID;
     }
 
     if (this->haveTXPower)
