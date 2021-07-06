@@ -4,8 +4,10 @@
 #include <list>
 #include <map>
 #include <iterator>
+#include <string>
 
 #include "BluetoothReporter.h"
+#include "BtleUuidDecoder.h"
 
 // TODO:    For each of the incoming method calls, generate full JSON, and put it in a
 //          string (or a list of strings, whatever is the simplest).  That list of strings (or whatever),
@@ -55,7 +57,16 @@ void BLEBasicReport::toJson(JsonObject json)
     if (this->haveServiceUUID)
     {
         json["serviceUUID"] = this->serviceUUID;
-        json["serviceUUIDVendorCode"] = this->serviceUUIDVendorCode;
+        json["16bitUUID"] = this->serviceUUIDVendorCode;
+
+        int uuidCode = strtol(this->serviceUUIDVendorCode.c_str(), 0, 16);
+
+        BtleUuidEntry *entry =   findUuidEntry(uuidCode);
+        if (entry != NULL) {
+            json["16bitUUIDAllocationType"] = entry->allocationType.c_str();
+            json["16bitUUIDAllocatedFor"]  =  entry->allocatedFor.c_str();
+        }
+        
     }
 
     if (this->haveTXPower)
@@ -117,7 +128,7 @@ void HttpBluetoothReporter::scanDone()
     // get rid of whatever silly reason is stopping the probram from writing long
     // reports, but until we fix that, thits will at least send some reports
 
-    const int stride = 10;
+    const int stride = 5;
     for (int i = 1; i < this->reports.size(); i += stride)
     {
 
