@@ -6,17 +6,9 @@
 
 #include <Arduino.h>
 
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEScan.h>
-#include <BLEAdvertisedDevice.h>
-#include <BLEEddystoneURL.h>
-#include <BLEEddystoneTLM.h>
-#include <BLEBeacon.h>
-// TODO: Maybe put the MDNS thing in a separate file.
-#include <WiFi.h>
 
-#include <ArduinoJson.h>
+// TODO: Maybe put the MDNS thing in a separate file.
+
 
 #include "MyAdvertisedDeviceCallbacks.h"
 #include "HttpClientAdapter.h"
@@ -28,66 +20,29 @@
 
 static const char* TAG = "Main";
 
-int scanTime = 5;            //In seconds
+
 int timeBetweenScans = 2000; // In milliseconds
 BLEScan *pBLEScan;
 
 BluetoothReporter *myReporter;
-
 HttpClientAdapter *httpClientAdapter;
-
-
 
 // TODO: Only for debugging purposes, perhaps remove?
 int delayTime = 1000;
 
-
-
-// TODO: Take a long hard look at  https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/protocols/esp_http_server.html
-
-
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(115200); // TODO: Maybe set to be much faster?
 
-  ESP_LOGV(TAG, "running setup");
+  ESP_LOGV(TAG, "Starting up");
   connectToWifiNetwork();
-  
-
-/*
-  httpClientAdapter = new HttpClientAdapter("http://10.0.0.18:3000/update-sensor");
-
-
-  ESP_LOGV(TAG, "... scanning");
-
-  myReporter = new HttpBluetoothReporter(httpClientAdapter);
-
-  BLEDevice::init("bluetoothScanner");
-  pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(myReporter));
-  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
-  pBLEScan->setInterval(100);
-  pBLEScan->setWindow(99); // less or equal setInterval value
-  */
-
   start_webserver();
   mdns_setup();
+   ESP_LOGV(TAG, "Ready to serve http requests.");
 }
-
 
 
 void loop()
 {
-  /*
-  // put your main code here, to run repeatedly:
-  myReporter->initScan(WiFi.macAddress());
-  BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-  ESP_LOGV(TAG, "Found %d bluetooth devices", foundDevices.getCount());
-  myReporter->scanDone();
-  pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
-
-  // scanAndReportWifiNetworks();
-  */
-
   delay(timeBetweenScans);
 }

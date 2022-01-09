@@ -7,10 +7,6 @@
 #include "WifiApReportHandler.h"
 
 static const char* TAG = "WifiApReportHandler";
-
-
-
-// TODO: Put in a separate file!!
 String scanAndReportWifiNetworks()
 {
 
@@ -69,7 +65,7 @@ String scanAndReportWifiNetworks()
     }
   }
 
-  
+
   // Print json doc.
   String json;
   serializeJsonPretty(doc, json);

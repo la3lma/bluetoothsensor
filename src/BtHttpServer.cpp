@@ -2,6 +2,7 @@
 #include <esp32-hal-log.h>
 
 #include "WifiApReportHandler.h"
+#include "BluetoothDeviceReportHandler.h"
 
 
 static const char* TAG = "BtHttpServer";
@@ -15,9 +16,6 @@ esp_err_t get_handler(httpd_req_t *req)
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
-
-
-
 
 
 
@@ -76,6 +74,14 @@ httpd_uri_t uri_get_wifi_ap_report = {
     .user_ctx = NULL
 };
 
+/* URI handler structure for GET /uri */
+httpd_uri_t uri_get_bluetooth_device_report = {
+    .uri      = "/bluetooth-device-report",
+    .method   = HTTP_GET,
+    .handler  = get_bluetooth_device_report_handler,
+    .user_ctx = NULL
+};
+
 
 /* URI handler structure for POST /uri */
 httpd_uri_t uri_post = {
@@ -100,6 +106,7 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &uri_get);
         httpd_register_uri_handler(server, &uri_post);
         httpd_register_uri_handler(server, &uri_get_wifi_ap_report);
+        httpd_register_uri_handler(server, &uri_get_bluetooth_device_report);
     }
     /* If server failed to start, handle will be NULL */
     return server;

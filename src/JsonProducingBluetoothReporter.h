@@ -1,5 +1,5 @@
-#ifndef BluetoothReporter_h
-#define BluetoothReporter_h
+#ifndef JsonProducingBluetoothReporter_h
+#define JsonProducingBluetoothReporter_h
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -76,24 +76,22 @@ public:
 class BluetoothReporter
 {
 public:
-    virtual void initScan(String wifiMAC);
-    virtual void scanDone();
+    virtual void initScan();
+    virtual String scanDone(String macAddr);
 
     virtual bool hasKey(std::string &bleAddress);
     virtual BLEBasicReport * registerNewReport(std::string bleAddress);
 };
 
-class HttpBluetoothReporter final : public BluetoothReporter
+class JsonProducingBluetoothReporter final : public BluetoothReporter
 {
 private:
-    HttpClientAdapter *httpClientAdapter;
     std::map<std::string, BLEBasicReport *> reports;
-    std::string wifiMAC;
 
 public:
-    HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter);
-    void initScan(String wifiMAC);
-    void scanDone();
+    JsonProducingBluetoothReporter();
+    void initScan();
+    String scanDone(String wifiMAC);
 
     bool hasKey(std::string &bleAddress);
     BLEBasicReport * registerNewReport(std::string bleAddress);
