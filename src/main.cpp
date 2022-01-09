@@ -103,7 +103,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  httpClientAdapter = new HttpClientAdapter("http://10.0.0.94:3000/update-sensor");
+  httpClientAdapter = new HttpClientAdapter("http://10.0.0.18:3000/update-sensor");
 
   Serial.println("Scanning...");
 
