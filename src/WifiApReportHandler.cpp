@@ -74,24 +74,12 @@ String scanAndReportWifiNetworks()
   String json;
   serializeJsonPretty(doc, json);
   return json;
-
-/*
-  Serial.println("json doc is: ");
-  Serial.println(json);
-  Serial.println("Size of json doc doc is: ");
-  Serial.println(json.length());
-  */
-
-  // Send it over the wire
-  // httpClientAdapter->sendJsonString(json);
 }
-
 
 
 esp_err_t get_wifi_ap_report_handler(httpd_req_t *req)
 {
     ESP_LOGV(TAG, "http get handler triggered");
-    
     httpd_resp_set_type(req, "application/json;charset=utf-8");
     httpd_resp_send(req, scanAndReportWifiNetworks().c_str(), HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
