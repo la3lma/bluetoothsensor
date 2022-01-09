@@ -47,33 +47,6 @@ void HttpClientAdapter::sendHttpSamplePacket()
     }
 }
 
-void HttpClientAdapter::connectToWifiNetwork()
-{
-    Serial.println("Initializing HTTP Bluetooth Reporter");
-
-    const char *ssid = "Telenor7329hos";
-    const char *password = "adscljsaupblg";
-
-    delay(10);
-    Serial.println('\n');
-
-    WiFi.begin(ssid, password);
-    Serial.print("Connecting to ");
-    Serial.print(ssid);
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print('.');
-    }
-
-    Serial.println('\n');
-    Serial.println("Connection established!");
-    Serial.print("IP address:\t");
-    Serial.println(WiFi.localIP());
-    Serial.print("ESP board MAC address:\t");
-    Serial.println(WiFi.macAddress());
-}
 
 void HttpClientAdapter::initializeHttpClient()
 {
@@ -122,11 +95,13 @@ int HttpClientAdapter::sendJsonString(const String &jsonString)
 HttpClientAdapter::HttpClientAdapter(const char *serverName)
 {
     this->serverName = serverName;
-    this->connectToWifiNetwork();
-    this->sendHttpSamplePacket();
-    this->sendJsonString("{\"clientType\":\"experimental\"}");
-    String str("{\"clientType\":\"evenMoreExperimental\"}");
-    this->sendJsonString(str);
+    
+    // TODO: Delete this asap, we don't need it.
+    // also delete the sendHttpSamplePacket, don't need that either.
+    // this->sendHttpSamplePacket();
+    // this->sendJsonString("{\"clientType\":\"experimental\"}");
+    // String str("{\"clientType\":\"evenMoreExperimental\"}");
+    // this->sendJsonString(str);
 
 /* DELETE THIS
     // Now try to find the MTU for the packet sender

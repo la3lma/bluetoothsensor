@@ -13,12 +13,20 @@
 #include <BLEEddystoneURL.h>
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
+// TODO: Maybe put the MDNS thing in a separate file.
 #include <WiFi.h>
 
 #include <ArduinoJson.h>
 
 #include "MyAdvertisedDeviceCallbacks.h"
 #include "HttpClientAdapter.h"
+#include "BtHttpServer.h"
+#include "WifiConnectivity.h"
+#include "MdnsSetup.h"
+
+#include <esp32-hal-log.h>
+
+static const char* TAG = "Main";
 
 int scanTime = 5;            //In seconds
 int timeBetweenScans = 2000; // In milliseconds
@@ -28,84 +36,29 @@ BluetoothReporter *myReporter;
 
 HttpClientAdapter *httpClientAdapter;
 
-// TODO: Put in a separate file!!
-void scanAndReportWifiNetworks()
-{
 
-  Serial.println("scan start");
 
-  DynamicJsonDocument doc(20000);
+// TODO: Only for debugging purposes, perhaps remove?
+int delayTime = 1000;
 
-  // A json object to identify this particular scanner
 
-  String wifiMac = WiFi.macAddress();
-  doc["scannerID"]["wifiMAC"] = wifiMac;
 
-  JsonArray reports = doc.createNestedArray("wifiApReports");
+// TODO: Take a long hard look at  https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/protocols/esp_http_server.html
 
-  // WiFi.scanNetworks will return the number of networks found
-  int n = WiFi.scanNetworks();
-  Serial.println("scan done");
-  if (n != 0)
-  {
-    for (int i = 0; i < n; ++i)
-    {
-      JsonObject nested = reports.createNestedObject();
-
-      nested["SSID"] = WiFi.SSID(i);
-      nested["RSSI"] = WiFi.RSSI(i);
-
-      int encryptionType = WiFi.encryptionType(i);
-      switch (encryptionType)
-      {
-      case WIFI_AUTH_OPEN:
-        nested["encryption"] = "OPEN";
-        break;
-
-      case WIFI_AUTH_WEP:
-        nested["encryption"] = "OPEN";
-        break;
-      case WIFI_AUTH_WPA_PSK:
-        nested["encryption"] = "WPA_PSK";
-        break;
-      case WIFI_AUTH_WPA2_PSK:
-        nested["encryption"] = "WPA2_PSK";
-        break;
-      case WIFI_AUTH_WPA_WPA2_PSK:
-        nested["encryption"] = "WPA_WPA2_PSK";
-        break;
-      case WIFI_AUTH_WPA2_ENTERPRISE:
-        nested["encryption"] = "WPA2_ENTERPRISE";
-        break;
-      case WIFI_AUTH_MAX:
-        nested["encryption"] = "MAX";
-        break;
-      default:
-        nested["encryption"] = "UNKNOWN";
-        break;
-      }
-    }
-  }
-
-  // Print json doc.
-  String json;
-  serializeJsonPretty(doc, json);
-  Serial.println("json doc is: ");
-  Serial.println(json);
-  Serial.println("Size of json doc doc is: ");
-  Serial.println(json.length());
-
-  // Send it over the wire
-  httpClientAdapter->sendJsonString(json);
-}
 
 void setup()
 {
   Serial.begin(115200);
 
+  ESP_LOGV(TAG, "running setup");
+  connectToWifiNetwork();
+  
+
+/*
   httpClientAdapter = new HttpClientAdapter("http://10.0.0.18:3000/update-sensor");
 
-  Serial.println("Scanning...");
+
+  ESP_LOGV(TAG, "... scanning");
 
   myReporter = new HttpBluetoothReporter(httpClientAdapter);
 
@@ -115,20 +68,26 @@ void setup()
   pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99); // less or equal setInterval value
+  */
+
+  start_webserver();
+  mdns_setup();
 }
+
+
 
 void loop()
 {
+  /*
   // put your main code here, to run repeatedly:
   myReporter->initScan(WiFi.macAddress());
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-  Serial.print("Devices found: ");
-  Serial.println(foundDevices.getCount());
-  Serial.println("Scan done!");
+  ESP_LOGV(TAG, "Found %d bluetooth devices", foundDevices.getCount());
   myReporter->scanDone();
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
 
-  scanAndReportWifiNetworks();
+  // scanAndReportWifiNetworks();
+  */
 
   delay(timeBetweenScans);
 }

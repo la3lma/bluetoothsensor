@@ -6,7 +6,6 @@
 class HttpClientAdapter
 {
 private:
-    void connectToWifiNetwork();
     void sendHttpSamplePacket();
     void initializeHttpClient();
     const char *serverName;

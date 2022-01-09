@@ -30,7 +30,6 @@ char *safeStringCopy(std::string arg)
     return (result);
 }
 
-
 void HttpBluetoothReporter::initScan(String wifiMAC)
 {
     Serial.println("zScan starting");
@@ -118,7 +117,7 @@ void HttpBluetoothReporter::scanDone()
     // * Free data just sent over the wire.
     // * Rewrite data collection to only send one report per identified instance, per reporting cycle.
     //    ... using this https://en.cppreference.com/w/cpp/container/map
-    Serial.println("zScan done<1>");
+    Serial.println("Scan done<1>");
 
     // There is a bug in the wifi/http clients that stops long reports from being written.
     // consequently we work around that by splitting the reports into multiple reports.
@@ -138,8 +137,6 @@ void HttpBluetoothReporter::scanDone()
 
         // A json object to identify this particular scanner
         doc["scannerID"]["wifiMAC"] = this->wifiMAC;
-
-
 
         // TBD:
         //   ... add a "wifiReports" element that reports on the
@@ -185,7 +182,7 @@ void HttpBluetoothReporter::scanDone()
         this->httpClientAdapter->sendJsonString(json);
     }
 
-    Serial.println("zScan done<3>");
+    Serial.println("Scan done<3>");
 }
 
 HttpBluetoothReporter::HttpBluetoothReporter(HttpClientAdapter *httpClientAdapter)
