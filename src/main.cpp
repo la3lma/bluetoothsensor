@@ -5,7 +5,8 @@
 */
 
 #include <Arduino.h>
-
+#include <esp32-hal-log.h>
+#include <esp_task_wdt.h>
 
 // TODO: Maybe put the MDNS thing in a separate file.
 
@@ -16,7 +17,7 @@
 #include "WifiConnectivity.h"
 #include "MdnsSetup.h"
 
-#include <esp32-hal-log.h>
+
 
 static const char* TAG = "Main";
 
@@ -38,7 +39,8 @@ void setup()
   connectToWifiNetwork();
   start_webserver();
   mdns_setup();
-   ESP_LOGV(TAG, "Ready to serve http requests.");
+  esp_task_wdt_init((uint32_t) 45, true);  // TODO: Set watchdog  timeout high (45), do  raise panic on overrun
+  ESP_LOGV(TAG, "Ready to serve http requests.");
 }
 
 

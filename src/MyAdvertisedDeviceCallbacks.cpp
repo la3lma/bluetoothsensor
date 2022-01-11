@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
@@ -7,17 +5,23 @@
 #include <BLEEddystoneURL.h>
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
+#include <esp_task_wdt.h>
+#include <esp32-hal-log.h>
+
 
 #include "MyAdvertisedDeviceCallbacks.h"
 
 #define ENDIAN_CHANGE_U16(x) ((((x)&0xFF00) >> 8) + (((x)&0xFF) << 8))
 
+static const char* TAG = "MyAdvertisedDeviceCallbacks";
+
 void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 {
 
+    esp_task_wdt_reset();
+
     std::string adv = advertisedDevice.toString();
-    Serial.println("Serialized representation of beacon");
-    Serial.println(adv.c_str());
+    
 
     // Get the ble address of the device, and use that to
     // remove duplicate entries for the same device.
@@ -28,8 +32,11 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     if (this->myReporter->hasKey(bleAddress))
     {
+         ESP_LOGV(TAG, "Duplicate detected: %s", adv.c_str());
         return;
     }
+
+    ESP_LOGV(TAG, "Unique beacon detected: %s", adv.c_str());
 
     // Build the basic report (raw data). We'll later augment with
     // specialized data interpretations if relevant (maybe, or perhaps we should just send
@@ -59,7 +66,7 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     if (advertisedDevice.haveRSSI())
     {
-        Serial.println("Reporting rssi");
+        ESP_LOGV(TAG, "Reporting rssi");
 
         rr->rssi = advertisedDevice.getRSSI();
         rr->haveRSSI = true;
@@ -71,7 +78,7 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     if (advertisedDevice.haveTXPower())
     {
-        Serial.println("Reporting txpower");
+        ESP_LOGV(TAG, "Reporting txpower");
         rr->txPower = advertisedDevice.getTXPower();
         rr->haveTXPower = true;
     }
@@ -92,14 +99,13 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     if (advertisedDevice.haveServiceUUID())
     {
-        Serial.println("Reporting uuid");
+        ESP_LOGV(TAG, "Reporting UUID");
         rr->haveServiceUUID = true;
         BLEUUID devUUID = advertisedDevice.getServiceUUID();
         rr->serviceUUID = devUUID.toString().c_str(); // ???    safeStringCopy(devUUID.toString());
         // TODO: Pick out vendor code and serve separately.
 
         rr->serviceUUIDVendorCode = rr->serviceUUID.substr(4,4);
-
     }
     else
     {
@@ -122,7 +128,7 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
                 oBeacon.setData(strManufacturerData);
 
                 // New
-                Serial.println("Reporting ibeacon");
+                ESP_LOGV(TAG, "Reporting ibeacon");
                 IBeaconReport *ibr = new IBeaconReport();
                 ibr->manufacturerId = oBeacon.getManufacturerId();
                 ibr->major = ENDIAN_CHANGE_U16(oBeacon.getMajor());
@@ -148,6 +154,8 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
             //   Serial.println(); */
             // }
         }
+
+        ESP_LOGV(TAG, "Done registring beacon %s", adv.c_str());
     }
 
     // This latter part seems to be looking at the payload and parsing that somehow

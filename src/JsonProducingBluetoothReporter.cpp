@@ -102,7 +102,7 @@ bool JsonProducingBluetoothReporter::hasKey(std::string &key)
 
 BLEBasicReport * JsonProducingBluetoothReporter::registerNewReport(std::string bleAddress)
 {
-    esp_task_wdt_status(0);
+    esp_task_wdt_reset(); // TODO: Reset watchdog timer.
     BLEBasicReport *report = new BLEBasicReport();
     report->bleAddress = bleAddress;
 
@@ -113,7 +113,7 @@ BLEBasicReport * JsonProducingBluetoothReporter::registerNewReport(std::string b
 String JsonProducingBluetoothReporter::scanDone(String wifiMAC)
 {
     ESP_LOGV(TAG, "Starting to produce bluetooth json doc");
-    DynamicJsonDocument doc(150000);  // TODO: Make this number as large as possible.
+    DynamicJsonDocument doc(250000);  // TODO: Make this number as large as possible.
     ESP_LOGV(TAG, "Allocated result buffer");
 
 
