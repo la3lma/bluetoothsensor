@@ -23,5 +23,8 @@ void connectToWifiNetwork()
         ESP_LOGV(TAG, ".");
     }
 
-    ESP_LOGV(TAG, "Connected: SSID=%s, IP=%s, MAC=%s", ssid, WiFi.localIP(), WiFi.macAddress());
+    ESP_LOGV(TAG, "Connected: SSID=%s, IP=%s, MAC=%s", 
+        ssid, 
+        WiFi.localIP().toString().c_str(), 
+        WiFi.macAddress().c_str());
 }
