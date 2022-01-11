@@ -1,6 +1,14 @@
 # bluetoothsensor
 Listen for presence of bluetooth and wifi devices, report back to the mothership.
 
+/*
+   Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleScan.cpp
+   Ported to Arduino ESP32 by Evandro Copercini
+   Changed to a beacon scanner to report iBeacon, EddystoneURL and EddystoneTLM beacons by beegee-tokyo
+*/
+
+
+
 TODO:
 *  We're crashing due to watchdog timer timeout.  This should be simple enough to fix, so just fix it:
      D][BLEAdvertisedDevice.cpp:292] parseAdvertisement(): Type: 0x0a (), length: 1, data: 0E (18123) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:

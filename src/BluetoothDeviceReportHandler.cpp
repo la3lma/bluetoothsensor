@@ -54,7 +54,7 @@ esp_err_t get_bluetooth_device_report_handler(httpd_req_t *req)
 {
     ESP_LOGV(TAG, "get_bluetooth_device_report_handler");
     httpd_resp_set_type(req, "application/json;charset=utf-8");
-    /// TODO: DElete esp_task_wdt_delete(NULL); // Disable watchdog timer, this could take a while.
+    /// TODO: delete esp_task_wdt_delete(NULL); // Disable watchdog timer, this could take a while.
     httpd_resp_send(req, scanAndReportBluetoothNetwork().c_str(), HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
