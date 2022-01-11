@@ -17,11 +17,11 @@ static const char* TAG = "MyAdvertisedDeviceCallbacks";
 
 void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 {
-
     esp_task_wdt_reset();
 
-    std::string adv = advertisedDevice.toString();
-    
+    ESP_LOGV(TAG, "ESP free heap is %u",  ESP.getFreeHeap());
+
+    // std::string adv = advertisedDevice.toString();
 
     // Get the ble address of the device, and use that to
     // remove duplicate entries for the same device.
@@ -32,16 +32,16 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     if (this->myReporter->hasKey(bleAddress))
     {
-         ESP_LOGV(TAG, "Duplicate detected: %s", adv.c_str());
+         ESP_LOGV(TAG, "Duplicate detected: %s",bleAddress.c_str());
         return;
     }
 
-    ESP_LOGV(TAG, "Unique beacon detected: %s", adv.c_str());
+    ESP_LOGV(TAG, "Unique beacon detected: %s", bleAddress.c_str());
 
     // Build the basic report (raw data). We'll later augment with
     // specialized data interpretations if relevant (maybe, or perhaps we should just send
     // everything along to the backend?)
-    BLEBasicReport *rr = this->myReporter->registerNewReport(bleAddress);
+    BLEBasicReport *rr = this->myReporter->registerNewReport(bleAddress.c_str());
     
 
     if (advertisedDevice.haveAppearance())
@@ -155,7 +155,7 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
             // }
         }
 
-        ESP_LOGV(TAG, "Done registring beacon %s", adv.c_str());
+        ESP_LOGV(TAG, "Done registring beacon %s", bleAddress.c_str());
     }
 
     // This latter part seems to be looking at the payload and parsing that somehow
