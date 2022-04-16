@@ -77,7 +77,7 @@ class BluetoothReporter
 {
 public:
     virtual void initScan();
-    virtual String scanDone(String macAddr);
+    virtual String scanDone();
 
     virtual bool hasKey(std::string &bleAddress);
     virtual BLEBasicReport * registerNewReport(std::string bleAddress);
@@ -91,7 +91,7 @@ private:
 public:
     JsonProducingBluetoothReporter();
     void initScan();
-    String scanDone(String wifiMAC);
+    String scanDone();
 
     bool hasKey(std::string &bleAddress);
     BLEBasicReport * registerNewReport(std::string bleAddress);

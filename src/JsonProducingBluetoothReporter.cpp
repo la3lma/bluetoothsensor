@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include <WiFi.h>
 #include <list>
 #include <map>
 #include <iterator>
@@ -111,14 +112,15 @@ BLEBasicReport * JsonProducingBluetoothReporter::registerNewReport(std::string b
     return report;
 }
 
-String JsonProducingBluetoothReporter::scanDone(String wifiMAC)
+String JsonProducingBluetoothReporter::scanDone()
 {
     ESP_LOGV(TAG, "Starting to produce bluetooth json doc");
     DynamicJsonDocument doc(25000);  // TODO: Make this number as large as possible.
     ESP_LOGV(TAG, "Allocated dynamic result buffer");
     doc.clear();
 
-    doc["scannerID"]["wifiMAC"] = wifiMAC.c_str();
+    String wifiMac = WiFi.macAddress();
+    doc["scannerID"]["wifiMAC"] = wifiMac.c_str();
 
     JsonArray reports = doc.createNestedArray("bleReports");
 

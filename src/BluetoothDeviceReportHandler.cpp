@@ -41,7 +41,7 @@ String scanAndReportBluetoothNetwork()
   ESP_LOGV(TAG, "Found %d bluetooth devices", foundDevices.getCount());
 
   // TODO: Add the ethernet mac adress here instead of the bananaphone thing.
-  String result = myReporter->scanDone("bananaphone wifi");  // TODO: Just get it as a simple json string, or crash trying.
+  String result = myReporter->scanDone();  // TODO: Just get it as a simple json string, or crash trying.
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
 
   return result;
