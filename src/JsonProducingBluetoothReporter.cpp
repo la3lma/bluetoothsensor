@@ -118,11 +118,9 @@ String JsonProducingBluetoothReporter::scanDone(String wifiMAC)
     ESP_LOGV(TAG, "Allocated dynamic result buffer");
     doc.clear();
 
-    // doc["foo"]  = "bar";
-
     doc["scannerID"]["wifiMAC"] = wifiMAC.c_str();
 
-    /* JsonArray reports = doc.createNestedArray("bleReports");
+    JsonArray reports = doc.createNestedArray("bleReports");
 
     for (auto it = this->reports.begin(); it != this->reports.end(); it++)
     {
@@ -132,7 +130,7 @@ String JsonProducingBluetoothReporter::scanDone(String wifiMAC)
         JsonObject nested = reports.createNestedObject();
         ptr.toJson(nested);
     }
-    */
+    
     ESP_LOGV(TAG, "Serializing result");
 
     // Print json doc.

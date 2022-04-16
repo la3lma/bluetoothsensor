@@ -25,9 +25,6 @@ String scanAndReportBluetoothNetwork()
 {
 
   ESP_LOGV(TAG, "Starting Bluetooth scan ");
-
-  //  httpClientAdapter = new HttpClientAdapter("http://10.0.0.18:3000/update-sensor");
-
   ESP_LOGV(TAG, "... scanning, this may take a while");
 
   JsonProducingBluetoothReporter *myReporter =  new JsonProducingBluetoothReporter();
@@ -43,6 +40,7 @@ String scanAndReportBluetoothNetwork()
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   ESP_LOGV(TAG, "Found %d bluetooth devices", foundDevices.getCount());
 
+  // TODO: Add the ethernet mac adress here instead of the bananaphone thing.
   String result = myReporter->scanDone("bananaphone wifi");  // TODO: Just get it as a simple json string, or crash trying.
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
 
