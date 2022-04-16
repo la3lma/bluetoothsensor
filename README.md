@@ -23,6 +23,6 @@ TODO:
 * Order new battery powered hw (also see if it's possible to repair current).
 * Make reports as complete as possible.
 * Make docker or kubernetes-powered logger, logging to some searchable database
-* Set up notebook access to that db.
+* Set up notebook access to that db (for data analysis)
 * Get some enclosures, mass produce (meaning five):-)
 

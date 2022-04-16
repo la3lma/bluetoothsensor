@@ -14,12 +14,9 @@ BLEScan *pBLEScan;
 BluetoothReporter *myReporter;
 HttpClientAdapter *httpClientAdapter;
 
-// TODO: Only for debugging purposes, perhaps remove?
-int delayTime = 1000;
-
 void setup()
 {
-  Serial.begin(115200); // TODO: Maybe set to be much faster?
+  Serial.begin(230400); // TODO: Maybe set to be much faster?
 
   ESP_LOGV(TAG, "Starting up");
   connectToWifiNetwork();
