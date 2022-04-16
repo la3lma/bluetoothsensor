@@ -47,7 +47,7 @@ void BLEBasicReport::toJson(JsonObject json)
 
     if (this->haveName)
     {
-        Serial.print("Json-printing name");
+        Serial.print("Json-recording name\n");
         json["name"] = this->name;
     }
 
@@ -61,13 +61,15 @@ void BLEBasicReport::toJson(JsonObject json)
         json["serviceUUID"] = this->serviceUUID;
         json["16bitUUID"] = this->serviceUUIDVendorCode;
 
+        /*  THis fails, so we're commenting out for now. Will probably need to delete
+            (or maybe enable, we'll see).
         int uuidCode = strtol(this->serviceUUIDVendorCode.c_str(), 0, 16);
-
         BtleUuidEntry *entry =   findUuidEntry(uuidCode);
         if (entry != NULL) {
             json["16bitUUIDAllocationType"] = entry->allocationType.c_str();
             json["16bitUUIDAllocatedFor"]  =  entry->allocatedFor.c_str();
         }
+        */
         
     }
 
@@ -112,27 +114,33 @@ BLEBasicReport * JsonProducingBluetoothReporter::registerNewReport(std::string b
 String JsonProducingBluetoothReporter::scanDone(String wifiMAC)
 {
     ESP_LOGV(TAG, "Starting to produce bluetooth json doc");
-    DynamicJsonDocument doc(250000);  // TODO: Make this number as large as possible.
-    ESP_LOGV(TAG, "Allocated result buffer");
+    DynamicJsonDocument doc(25000);  // TODO: Make this number as large as possible.
+    ESP_LOGV(TAG, "Allocated dynamic result buffer");
+    doc.clear();
 
+    // doc["foo"]  = "bar";
 
     doc["scannerID"]["wifiMAC"] = wifiMAC.c_str();
 
-    JsonArray reports = doc.createNestedArray("bleReports");
+    /* JsonArray reports = doc.createNestedArray("bleReports");
 
     for (auto it = this->reports.begin(); it != this->reports.end(); it++)
     {
+        ESP_LOGV(TAG, "Looping over elements");
         const std::string key = it->first;
         BLEBasicReport ptr = *(it->second);
         JsonObject nested = reports.createNestedObject();
         ptr.toJson(nested);
     }
+    */
+    ESP_LOGV(TAG, "Serializing result");
 
-    return "{}";
     // Print json doc.
-    // String json;
-    // serializeJsonPretty(doc, json);
-    // return json;
+    String output;
+    serializeJson(doc, output);
+
+    ESP_LOGV(TAG, "Returning result");
+    return output;
 }
 
 JsonProducingBluetoothReporter::JsonProducingBluetoothReporter()

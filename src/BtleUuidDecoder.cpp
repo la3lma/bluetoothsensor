@@ -1208,7 +1208,7 @@ BtleUuidEntry *findUuidEntry(int key) {
     // Terminal linear search (either max=min, or max=min+1)
     Serial.print("Searching for ");
 
-  Serial.print("linsearch btle key: ");
+    Serial.print("linsearch btle key: ");
                 Serial.println(key);
     for (int i = min; i <= max; i++) {
         int currentKey = btleEntries[min].id ;
@@ -1218,8 +1218,6 @@ BtleUuidEntry *findUuidEntry(int key) {
             return  ((BtleUuidEntry*)btleEntries + i);
         }
     }
-
-
 
     return NULL;
 }
