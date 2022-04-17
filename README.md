@@ -26,3 +26,7 @@ TODO:
 * Set up notebook access to that db (for data analysis)
 * Get some enclosures, mass produce (meaning five):-)
 
+
+
+https://en.wikipedia.org/wiki/IBeacon
+
