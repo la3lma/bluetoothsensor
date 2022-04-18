@@ -3,7 +3,7 @@
 
 const int noOfBtleEntries = 1; //1176;
 const BtleUuidEntry btleEntries[noOfBtleEntries] = {
-
+// TODO: This code is now obsolete. Delete it asap and deal with the fallout.
 /*  {0X2ADC, "Mesh Provisioning Data Out", "GATT Characteristic and Object Type"} ,
   {0X2ADD, "Mesh Proxy Data In", "GATT Characteristic and Object Type"},
   {0X2ADE, "Mesh Proxy Data Out", "GATT Characteristic and Object Type"},
