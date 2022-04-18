@@ -1,4 +1,4 @@
-package bt_report_parser
+package report_parser
 
 import (
 	"encoding/json"

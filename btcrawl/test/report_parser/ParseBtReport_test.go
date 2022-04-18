@@ -1,7 +1,7 @@
-package bt_report_parser
+package report_parser
 
 import (
-	"btcrawl/internal/bt_report_parser"
+	"btcrawl/internal/report_parser"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -12,7 +12,7 @@ func TestParseBtReport(t *testing.T) {
 	jsonBytes, err := os.ReadFile("../testdata/example-bt-log.json")
 	assert.NoError(t, err)
 
-	bleScan, err := bt_report_parser.ParseBtReport(jsonBytes)
+	bleScan, err := report_parser.ParseBtReport(jsonBytes)
 	assert.NoError(t, err)
 
 	// TODO: Add more assertions, ... or not
