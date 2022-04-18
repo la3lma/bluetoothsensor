@@ -1,5 +1,5 @@
 package bt_report_parser
 
-func Parse() string {
+func ParseBtReport(json string) string {
 	return "Hello, world."
 }
