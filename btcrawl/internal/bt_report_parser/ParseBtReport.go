@@ -2,7 +2,6 @@ package bt_report_parser
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type BleScan struct {
@@ -27,7 +26,6 @@ type BleScan struct {
 }
 
 func ParseBtReport(jsonBytes []byte) (BleScan, error) {
-	fmt.Print(string(jsonBytes))
 	var bleScan BleScan
 	err := json.Unmarshal(jsonBytes, &bleScan)
 	return bleScan, err
