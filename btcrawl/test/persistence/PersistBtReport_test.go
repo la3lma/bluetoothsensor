@@ -29,6 +29,7 @@ func TestJsonBtoreportToDbBtReport(t *testing.T) {
 	// Check
 	assert.NoError(t, err)
 	assert.NotEmptyf(t, dbObj, "Empty dbobject after conversion")
+	//   ... TBD: Extensive testing of mapping actually missing.
 }
 
 func TestPersistBtReport(t *testing.T) {
