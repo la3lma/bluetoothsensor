@@ -34,6 +34,6 @@ type BleScan struct {
 func ParseBtReport(jsonBytes []byte) (BleScan, error) {
 	fmt.Print(string(jsonBytes))
 	var bleScan BleScan
-	json.Unmarshal(jsonBytes, &bleScan)
-	return bleScan, nil
+	err := json.Unmarshal(jsonBytes, &bleScan)
+	return bleScan, err
 }
