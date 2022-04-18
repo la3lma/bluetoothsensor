@@ -10,6 +10,10 @@ type BleScan struct {
 	BleReports []BleReport
 }
 
+func (s BleScan) Create() {
+
+}
+
 type ScannerID struct {
 	Id      int
 	WifiMAC string
@@ -17,6 +21,7 @@ type ScannerID struct {
 
 type BleReport struct {
 	Id             int
+	ScanId         int
 	BleAddress     string
 	Rssi           int
 	ServiceUUID    string
@@ -26,6 +31,7 @@ type BleReport struct {
 
 type IBeaconReport struct {
 	Id             int
+	ReportId       int
 	ManufacturerId int
 	Major          int
 	Minor          int
@@ -64,16 +70,42 @@ func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 	return &result, nil
 }
 
-func persistDbBleScan(scan *BleScan) error {
-	return nil
+func persistDbBleScan(db Database, scan *BleScan) error {
+
+	t := db.BeginTransaction()
+	err := t.CreateScan(scan)
+	if err != nil {
+		t.Rollback()
+		return err
+	}
+
+	for _, r := range scan.BleReports {
+		r.ScanId = scan.Id
+		err = t.CreateBleReport(&r)
+		if err != nil {
+			t.Rollback()
+			return err
+		}
+
+		for _, b := range r.IBeaconReports {
+			b.ReportId = r.Id
+			err = t.CreateIBeaconReport(&b)
+			if err != nil {
+				t.Rollback()
+				return err
+			}
+		}
+	}
+
+	return t.Commit()
 }
 
-func PersistBtReport(scanFromJson *report_parser.BleScan) error {
+func PersistBtReport(db Database, scanFromJson *report_parser.BleScan) error {
 	dbBleScan, err := JsonBtoreportToDbBtReport(scanFromJson)
 	if err != nil {
 		return err
 	}
 
-	err = persistDbBleScan(dbBleScan)
+	err = persistDbBleScan(db, dbBleScan)
 	return err
 }

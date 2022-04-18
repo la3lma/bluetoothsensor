@@ -37,8 +37,10 @@ func TestPersistBtReport(t *testing.T) {
 	err, bleScan := readTestData(t)
 	assert.NoError(t, err)
 
+	db := &persistence.DbImpl{}
+
 	// Act
-	err = persistence.PersistBtReport(&bleScan)
+	err = persistence.PersistBtReport(db, &bleScan)
 
 	// Check
 	assert.NoError(t, err)
