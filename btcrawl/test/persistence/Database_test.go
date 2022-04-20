@@ -12,8 +12,6 @@ func TestPing(t *testing.T) {
 	var db *sqlx.DB
 	db, err := persistence.NewInMemoryDb(t)
 	assert.NoError(t, err, "Couldn't make in  memory db")
-
-	// force a connection and test that it worked
 	err = db.Ping()
 	assert.NoError(t, err, "Couldn't ping to memory db")
 }
