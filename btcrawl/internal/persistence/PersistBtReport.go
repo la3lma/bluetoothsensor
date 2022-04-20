@@ -5,8 +5,8 @@ import "btcrawl/internal/report_parser"
 // TODO: Find a better way to encode null ID values than -1.
 
 type BleScan struct {
-	Id         int
-	ScannerID  ScannerID
+	Id         int       `db:"id"`
+	ScannerID  ScannerID `db:"scannerId"`
 	BleReports []BleReport
 }
 
@@ -15,28 +15,28 @@ func (s BleScan) Create() {
 }
 
 type ScannerID struct {
-	Id      int
-	WifiMAC string
+	Id      int    `db:"id"`
+	WifiMAC string `db:"WifiMAC"`
 }
 
 type BleReport struct {
-	Id             int
-	ScanId         int
-	BleAddress     string
-	Rssi           int
-	ServiceUUID    string
-	BitUUID        string
+	Id             int    `db:"id"`
+	ScanId         int    `db:"scanId"`
+	BleAddress     string `db:"bleAddress"`
+	Rssi           int    `db:"rssi"`
+	ServiceUUID    string `db:"serviceUUID"`
+	BitUUID        string `db:"uuid16bit"`
 	IBeaconReports []IBeaconReport
 }
 
 type IBeaconReport struct {
-	Id             int
-	ReportId       int
-	ManufacturerId int
-	Major          int
-	Minor          int
-	ProximityUUID  string
-	Power          int
+	Id             int    `db:"id"`
+	ReportId       int    `db:"ble_report_id"`
+	ManufacturerId int    `db:"manufacturerId"`
+	Major          int    `db:"major"`
+	Minor          int    `db:"minor"`
+	ProximityUUID  string `db:"proximityUUID"`
+	Power          int    `db:"power"`
 }
 
 func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
