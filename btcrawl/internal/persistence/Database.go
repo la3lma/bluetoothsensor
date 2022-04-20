@@ -1,5 +1,11 @@
 package persistence
 
+import (
+	"github.com/jmoiron/sqlx"
+	"io/ioutil"
+	"testing"
+)
+
 type Transaction interface {
 	Rollback() error
 	Commit() error
@@ -15,6 +21,26 @@ type Database interface {
 }
 
 // TODO: This is an empty shell of a persistence model
+
+func InjectDatabaseModel(db *sqlx.DB) error {
+	schema, err := ioutil.ReadFile("../../../schema.sql")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(string(schema))
+	return err
+}
+
+func NewInMemoryDb(t *testing.T) (*sqlx.DB, error) {
+	var db *sqlx.DB
+
+	// exactly the same as the built-in
+	db, err := sqlx.Open("sqlite3", ":memory:")
+	return db, err
+
+	// from a pre-existing sql.DB; note the required driverName
+	// db, err := sqlx.NewDb(sql.Open("sqlite3", ":memory:"), "sqlite3")
+}
 
 type DbImpl struct {
 }
