@@ -92,7 +92,7 @@ func (tr *TrImpl) CreateBtScan(scan *BleScan) error { // TODO: Rename to CreateB
 	}
 
 	result, err := tr.tr.Exec(
-		"INSERT INTO scan  (scannerId, timeOfScan, scanType, ipAddress) VALUES (?,?,'bt',?)",
+		"INSERT INTO scan(scannerId, timeOfScan, scanTypeId, ipAddress) VALUES (?,?,1,?)",
 		scan.ScannerID.Id,
 		scan.TimeOfScan,
 		scan.IpAddress)

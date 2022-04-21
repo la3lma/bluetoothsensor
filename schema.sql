@@ -42,7 +42,7 @@ CREATE TABLE  IF NOT EXISTS scanner
     FOREIGN KEY(scannerTypeId) REFERENCES scanner_type(id)
 );
 
-INSERT INTO scanner(mac, scannerType)
+INSERT INTO scanner(mac, scannerTypeId)
 VALUES ("7C:9E:BD:4B:2F:1C", 1);
 
 CREATE TABLE IF NOT EXISTS  scan
@@ -50,13 +50,13 @@ CREATE TABLE IF NOT EXISTS  scan
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     scannerId  INTEGER NOT NULL,
     timeOfScan INTEGER NOT NULL,
-    scanTypeId   INTEGER NOT NULL,
+    scanTypeId  INTEGER NOT NULL,
     ipAddress  TEXT NOT NULL,
     FOREIGN KEY(scannerId) REFERENCES scanner(id),
-    FOREIGN KEY(scanType) REFERENCES  scan_type(id)
+    FOREIGN KEY(scanTypeId) REFERENCES  scan_type(id)
 );
 
-INSERT INTO scan(scannerId, timeofScan, scanType, ipAddress)
+INSERT INTO scan(scannerId, timeofScan, scanTypeId, ipAddress)
 VALUES (1, 1, 1, "10.0.0.35");
 
 CREATE TABLE IF NOT EXISTS  ble_report
