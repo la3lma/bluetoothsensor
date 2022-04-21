@@ -3,7 +3,6 @@ package persistence
 import (
 	"github.com/jmoiron/sqlx"
 	"io/ioutil"
-	"testing"
 )
 
 type Transaction interface {
@@ -17,11 +16,20 @@ type Transaction interface {
 }
 
 type Database interface {
-	BeginTransaction() Transaction
+	BeginTransaction() (Transaction, error)
+}
+
+func NewInMemoryDb() (*sqlx.DB, error) {
+	// TODO: This is an empty shell of a persistence mar db *sqlx.DB
+	// exactly the same as the built-in
+	db, err := sqlx.Open("sqlite3", ":memory:")
+	return db, err
+
+	// from a pre-existing sql.DB; note the required driverName
+	// db, err := sqlx.NewDb(sql.Open("sqlite3", ":memory:"), "sqlite3")
 }
 
 // TODO: This is an empty shell of a persistence model
-
 func InjectDatabaseModel(db *sqlx.DB) error {
 	schema, err := ioutil.ReadFile("../../../schema.sql")
 	if err != nil {
@@ -31,32 +39,41 @@ func InjectDatabaseModel(db *sqlx.DB) error {
 	return err
 }
 
-func NewInMemoryDb(t *testing.T) (*sqlx.DB, error) {
-	var db *sqlx.DB
-
-	// exactly the same as the built-in
-	db, err := sqlx.Open("sqlite3", ":memory:")
-	return db, err
-
-	// from a pre-existing sql.DB; note the required driverName
-	// db, err := sqlx.NewDb(sql.Open("sqlite3", ":memory:"), "sqlite3")
+func NewDatabase(db *sqlx.DB) Database {
+	return &DbImpl{db: db}
 }
 
 type DbImpl struct {
+	db *sqlx.DB
 }
 
 type TrImpl struct {
+	tr *sqlx.Tx
 }
 
-func (db *DbImpl) BeginTransaction() Transaction {
-	return &TrImpl{}
+func (db *DbImpl) BeginTransaction() (Transaction, error) {
+	tr, err := db.db.Beginx() // TODO or beginx?
+	return &TrImpl{tr: tr}, err
 }
 
-func (db *TrImpl) CreateScan(scan *BleScan) error {
-	return nil
+func (tr *TrImpl) CreateScan(scan *BleScan) error { // TODO: Rename to CreateBluetoothScan
+	result, err := tr.tr.Exec(
+		"INSERT INTO scan  (scannerId, timeOfScan, scanType, ipAddress) VALUES (?,?,'bt',?)",
+		scan.ScannerID,
+		scan.TimeOfScan, scan.IpAddress)
+	if err != nil {
+		return err
+	}
+
+	newId, err := result.LastInsertId()
+	if err != nil {
+		scan.Id = newId
+	}
+	return err
 }
 
 func (db *TrImpl) CreateBleReport(bleReport *BleReport) error {
+
 	return nil
 }
 

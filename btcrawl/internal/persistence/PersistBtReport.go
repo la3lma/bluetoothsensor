@@ -5,8 +5,10 @@ import "btcrawl/internal/report_parser"
 // TODO: Find a better way to encode null ID values than -1.
 
 type BleScan struct {
-	Id         int       `db:"id"`
+	Id         int64     `db:"id"`
 	ScannerID  ScannerID `db:"scannerId"`
+	TimeOfScan int64     `db:"timeOfScan"`
+	IpAddress  string    `db:"ipAddress"`
 	BleReports []BleReport
 }
 
@@ -15,13 +17,13 @@ func (s BleScan) Create() {
 }
 
 type ScannerID struct {
-	Id      int    `db:"id"`
+	Id      int64  `db:"id"`
 	WifiMAC string `db:"WifiMAC"`
 }
 
 type BleReport struct {
-	Id             int    `db:"id"`
-	ScanId         int    `db:"scanId"`
+	Id             int64  `db:"id"`
+	ScanId         int64  `db:"scanId"`
 	BleAddress     string `db:"bleAddress"`
 	Rssi           int    `db:"rssi"`
 	ServiceUUID    string `db:"serviceUUID"`
@@ -30,8 +32,8 @@ type BleReport struct {
 }
 
 type IBeaconReport struct {
-	Id             int    `db:"id"`
-	ReportId       int    `db:"ble_report_id"`
+	Id             int64  `db:"id"`
+	ReportId       int64  `db:"ble_report_id"`
 	ManufacturerId int    `db:"manufacturerId"`
 	Major          int    `db:"major"`
 	Minor          int    `db:"minor"`
@@ -72,8 +74,11 @@ func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 
 func persistDbBleScan(db Database, scan *BleScan) error {
 
-	t := db.BeginTransaction()
-	err := t.CreateScan(scan)
+	t, err := db.BeginTransaction()
+	if err != err {
+		return err
+	}
+	err = t.CreateScan(scan)
 	if err != nil {
 		t.Rollback()
 		return err

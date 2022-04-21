@@ -34,10 +34,9 @@ func TestJsonBtoreportToDbBtReport(t *testing.T) {
 
 func TestPersistBtReport(t *testing.T) {
 	// Prepare
-	err, bleScan := readTestData(t)
+	err, bleScan := readTestData(t) // TODO: Convert to domain struct
 	assert.NoError(t, err)
-
-	db := &persistence.DbImpl{}
+	db := NewInMemoryTestDatabase(t)
 
 	// Act
 	err = persistence.PersistBtReport(db, &bleScan)
