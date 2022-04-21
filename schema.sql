@@ -37,9 +37,9 @@ VALUES ('ESP-32CAM', 'ESP-32CAM based bluetooth/ethernet scanner');
 CREATE TABLE  IF NOT EXISTS scanner
 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    mac TEXT NOT NULL,
-    scannerType INTEGER NOT NULL,
-    FOREIGN KEY(scannerType) REFERENCES scanner_type(id)
+    scannerTypeId INTEGER,
+    mac TEXT NOT NULL UNIQUE,
+    FOREIGN KEY(scannerTypeId) REFERENCES scanner_type(id)
 );
 
 INSERT INTO scanner(mac, scannerType)
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS  scan
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     scannerId  INTEGER NOT NULL,
     timeOfScan INTEGER NOT NULL,
-    scanType   INTEGER NOT NULL,
+    scanTypeId   INTEGER NOT NULL,
     ipAddress  TEXT NOT NULL,
     FOREIGN KEY(scannerId) REFERENCES scanner(id),
     FOREIGN KEY(scanType) REFERENCES  scan_type(id)

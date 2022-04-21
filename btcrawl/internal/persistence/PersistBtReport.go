@@ -1,6 +1,9 @@
 package persistence
 
-import "btcrawl/internal/report_parser"
+import (
+	"btcrawl/internal/report_parser"
+	"database/sql"
+)
 
 // TODO: Find a better way to encode null ID values than -1.
 
@@ -17,8 +20,9 @@ func (s BleScan) Create() {
 }
 
 type ScannerID struct {
-	Id      int64  `db:"id"`
-	WifiMAC string `db:"WifiMAC"`
+	Id            int64         `db:"id"`
+	ScannerTypeId sql.NullInt64 `db:"scannerTypeId"`
+	WifiMAC       string        `db:"mac"`
 	// TODO: Declare the MAC as a secondary key in the DDL
 }
 
@@ -77,12 +81,6 @@ func persistDbBleScan(db Database, scan *BleScan) error {
 
 	t, err := db.BeginTransaction()
 	if err != err {
-		return err
-	}
-
-	err = t.CreateIfNotPresent(scan.ScannerID)
-	if err != nil {
-		t.Rollback()
 		return err
 	}
 
