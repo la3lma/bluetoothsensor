@@ -10,7 +10,8 @@ type Transaction interface {
 	Commit() error
 
 	// CRUD we can do using this data model
-	CreateScan(scan *BleScan) error
+	CreateIfNotPresent(sid ScannerID) error
+	CreateBtScan(scan *BleScan) error
 	CreateBleReport(bleReport *BleReport) error
 	CreateIBeaconReport(iBeaconReport *IBeaconReport) error
 }
@@ -56,10 +57,26 @@ func (db *DbImpl) BeginTransaction() (Transaction, error) {
 	return &TrImpl{tr: tr}, err
 }
 
-func (tr *TrImpl) CreateScan(scan *BleScan) error { // TODO: Rename to CreateBluetoothScan
+func (tr *TrImpl) CreateIfNotPresent(sid ScannerID) error {
+	result, err := tr.tr.Exec(
+		"INSERT INTO scan  (MAC) VALUES (?) ", // TODO: "Unless exists" thing missing.
+		scan.ScannerID.Id,
+		scan.TimeOfScan, scan.IpAddress)
+	if err != nil {
+		return err
+	}
+
+	newId, err := result.LastInsertId()
+	if err != nil {
+		sid.Id = newId
+	}
+	return err
+}
+
+func (tr *TrImpl) CreateBtScan(scan *BleScan) error { // TODO: Rename to CreateBluetoothScan
 	result, err := tr.tr.Exec(
 		"INSERT INTO scan  (scannerId, timeOfScan, scanType, ipAddress) VALUES (?,?,'bt',?)",
-		scan.ScannerID,
+		scan.ScannerID.Id,
 		scan.TimeOfScan, scan.IpAddress)
 	if err != nil {
 		return err

@@ -19,6 +19,7 @@ func (s BleScan) Create() {
 type ScannerID struct {
 	Id      int64  `db:"id"`
 	WifiMAC string `db:"WifiMAC"`
+	// TODO: Declare the MAC as a secondary key in the DDL
 }
 
 type BleReport struct {
@@ -78,7 +79,14 @@ func persistDbBleScan(db Database, scan *BleScan) error {
 	if err != err {
 		return err
 	}
-	err = t.CreateScan(scan)
+
+	err = t.CreateIfNotPresent(scan.ScannerID)
+	if err != nil {
+		t.Rollback()
+		return err
+	}
+
+	err = t.CreateBtScan(scan)
 	if err != nil {
 		t.Rollback()
 		return err
