@@ -26,6 +26,8 @@ TODO:
 * Make it run in docker (maybe)
 * Make it run on raspberry pi
 * Make it onto a system that just runs continously
+* Refactor persistence code to be split into multiple files
+* Refactor persistence code to be less repetitive
 
 
 *  We're crashing due to watchdog timer timeout.  This should be simple enough to fix, so just fix it:
