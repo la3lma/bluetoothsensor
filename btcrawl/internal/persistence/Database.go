@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"io/ioutil"
 )
@@ -18,6 +19,15 @@ type Transaction interface {
 
 type Database interface {
 	BeginTransaction() (Transaction, error)
+}
+
+func NewFileDatabase(filename string) (*sqlx.DB, error) {
+	db, err := sql.Open("sqlite3", filename)
+	if err != nil {
+		return nil, err
+	}
+	dbx := sqlx.NewDb(db, "sqlite3")
+	return dbx, nil
 }
 
 func NewInMemoryDb() (*sqlx.DB, error) {
