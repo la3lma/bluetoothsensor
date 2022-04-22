@@ -88,7 +88,7 @@ func (tr *TrImpl) CreateScannerIfNotPresent(sid *ScannerID) error {
 	}
 
 	newId, err := result.LastInsertId()
-	if err != nil {
+	if err == nil {
 		sid.Id = newId
 	}
 	return err
@@ -111,7 +111,7 @@ func (tr *TrImpl) CreateBtScan(scan *BleScan) error { // TODO: Rename to CreateB
 	}
 
 	newId, err := result.LastInsertId()
-	if err != nil {
+	if err == nil {
 		scan.Id = newId
 	}
 	return err
@@ -126,7 +126,7 @@ func (tr *TrImpl) CreateBleReport(bleReport *BleReport) error {
 	}
 
 	newId, err := result.LastInsertId()
-	if err != nil {
+	if err == nil {
 		bleReport.Id = newId
 	}
 	return err
