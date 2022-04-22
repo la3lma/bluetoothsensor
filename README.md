@@ -1,5 +1,5 @@
 # bluetoothsensor
-Listen for presence of bluetooth and wifi devices, report back to the mothership.
+Listen for presence of bluetooth and wifi devices, reporty back to the mothership.
 
 /*
    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleScan.cpp
@@ -10,6 +10,24 @@ Listen for presence of bluetooth and wifi devices, report back to the mothership
 
 
 TODO:
+
+* Look over persisted reports and fix obvious errors
+  * ID = -1, shouldn't happen
+  * Only lowercase hexadecimal numbers, for concistency
+
+* Make a few nice views for the stored data
+* Fix naming inconsistencies between Go and SQL code
+* Make makefile to test and build
+* Fix gripes from goland
+* Make static build that includes the sql file so that this thing
+  can go from zero to sixty just from an executable
+* Add logging functionality
+* Add rudimentary command line parsing
+* Make it run in docker (maybe)
+* Make it run on raspberry pi
+* Make it onto a system that just runs continously
+
+
 *  We're crashing due to watchdog timer timeout.  This should be simple enough to fix, so just fix it:
      D][BLEAdvertisedDevice.cpp:292] parseAdvertisement(): Type: 0x0a (), length: 1, data: 0E (18123) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
      E (18123) task_wdt:  - IDLE0 (CPU 0)
