@@ -16,10 +16,6 @@ type BleScan struct {
 	BleReports []BleReport
 }
 
-func (s BleScan) Create() {
-
-}
-
 type ScannerID struct {
 	Id            int64         `db:"id"`
 	ScannerTypeId sql.NullInt64 `db:"scannerTypeId"`
@@ -39,7 +35,7 @@ type BleReport struct {
 
 type IBeaconReport struct {
 	Id             int64  `db:"id"`
-	BleReportId    int64  `db:"ble_report_id"`
+	BleReportId    int64  `db:"ble_report_id"` //TODO: Snakecase->camelcase
 	ManufacturerId int    `db:"manufacturerId"`
 	Major          int    `db:"major"`
 	Minor          int    `db:"minor"`
