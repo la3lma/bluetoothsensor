@@ -107,8 +107,19 @@ func (tr *TrImpl) CreateBtScan(scan *BleScan) error { // TODO: Rename to CreateB
 	return err
 }
 
-func (db *TrImpl) CreateBleReport(bleReport *BleReport) error {
-	return nil
+func (tr *TrImpl) CreateBleReport(bleReport *BleReport) error {
+	result, err := tr.tr.Exec(
+		"INSERT INTO ble_report(scanId, bleAddress, rssi, serviceUUID, uuid16bit) VALUES (?,?,?,?,?)",
+		bleReport.ScanId, bleReport.BleAddress, bleReport.Rssi, bleReport.ServiceUUID, bleReport.BitUUID)
+	if err != nil {
+		return err
+	}
+
+	newId, err := result.LastInsertId()
+	if err != nil {
+		bleReport.Id = newId
+	}
+	return err
 }
 
 func (db *TrImpl) CreateIBeaconReport(iBeaconReport *IBeaconReport) error {
