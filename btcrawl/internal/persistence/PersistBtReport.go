@@ -3,6 +3,7 @@ package persistence
 import (
 	"btcrawl/internal/report_parser"
 	"database/sql"
+	"strings"
 )
 
 // TODO: Find a better way to encode null ID values than -1.
@@ -49,16 +50,16 @@ type IBeaconReport struct {
 func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 
 	noOfBleReportsInScan := len(scan.BleReports)
-	var result = BleScan{Id: -1, ScannerID: ScannerID{WifiMAC: scan.ScannerID.WifiMAC}, BleReports: make([]BleReport, noOfBleReportsInScan)}
+	var result = BleScan{Id: -1, ScannerID: ScannerID{WifiMAC: strings.ToLower(scan.ScannerID.WifiMAC)}, BleReports: make([]BleReport, noOfBleReportsInScan)}
 	for i, s := range scan.BleReports {
 
 		var noOfIbeaconReports = len(scan.BleReports[i].IBeaconReports)
 		result.BleReports[i] = BleReport{
 			Id:             -1,
-			BleAddress:     s.BleAddress,
+			BleAddress:     strings.ToLower(s.BleAddress),
 			Rssi:           s.Rssi,
-			ServiceUUID:    s.ServiceUUID,
-			BitUUID:        s.BitUUID,
+			ServiceUUID:    strings.ToLower(s.ServiceUUID),
+			BitUUID:        strings.ToLower(s.BitUUID),
 			IBeaconReports: make([]IBeaconReport, noOfIbeaconReports),
 		}
 
@@ -69,7 +70,7 @@ func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 				ManufacturerId: beaconReport.ManufacturerId,
 				Major:          beaconReport.Major,
 				Minor:          beaconReport.Minor,
-				ProximityUUID:  beaconReport.ProximityUUID,
+				ProximityUUID:  strings.ToLower(beaconReport.ProximityUUID),
 				Power:          beaconReport.Power,
 			}
 		}
