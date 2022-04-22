@@ -11,13 +11,9 @@ Listen for presence of bluetooth and wifi devices, reporty back to the mothershi
 
 TODO:
 
-* Look over persisted reports and fix obvious errors
-  * ID = -1, shouldn't happen
-  * Only lowercase hexadecimal numbers, for concistency
-
-* Make a few nice views for the stored data
-* Fix naming inconsistencies between Go and SQL code
+* Fix bug, pick up device names
 * Make makefile to test and build
+* Fix naming inconsistencies between Go and SQL code
 * Fix gripes from goland
 * Make static build that includes the sql file so that this thing
   can go from zero to sixty just from an executable

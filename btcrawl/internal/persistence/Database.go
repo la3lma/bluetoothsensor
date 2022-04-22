@@ -63,7 +63,7 @@ type TrImpl struct {
 }
 
 func (db *DbImpl) BeginTransaction() (Transaction, error) {
-	tr, err := db.db.Beginx() // TODO or beginx?
+	tr, err := db.db.Beginx()
 	return &TrImpl{tr: tr}, err
 }
 

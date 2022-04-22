@@ -9,7 +9,7 @@
 ## Resources
 
 * Project template: https://github.com/golang-standards/project-layout
-* Standard SQL interrace https://pkg.go.dev/database/sql
+* Standard SQL interface https://pkg.go.dev/database/sql
 * Some documentation https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/05.3.html
 * Transactions https://www.sohamkamani.com/golang/sql-transactions/
 * The conforming driver: https://github.com/mattn/go-sqlite3

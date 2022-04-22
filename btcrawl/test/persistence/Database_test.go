@@ -41,24 +41,3 @@ func NewTestfileDatabase(t *testing.T) persistence.Database {
 func TestReadDDLFromFile(t *testing.T) {
 	NewInMemoryTestDatabase(t)
 }
-
-// This is essentially a smoketest to check if we can read what we want to read from the
-// database.  We're not really interested in the scanner type at this point.
-/*
-func TestGetScannerType(t *testing.T) {
-	db := NewInMemoryTestDatabase(t)
-
-	rows, err := db.Query("SELECT id, name, description  FROM scanner_type")
-	assert.NoError(t, err, "Scanner type query failed")
-	// iterate over each row
-	for rows.Next() {
-		var id int
-		// If we get any nulls, we fix that by getting sql.Nullstring
-		var name sql.NullString
-		var description sql.NullString
-		err = rows.Scan(&id, &name, &description)
-		assert.NoError(t, err, "Could not read row")
-		fmt.Println("Just read ", id, ", ", name, ", ", description)
-	}
-}
-*/
