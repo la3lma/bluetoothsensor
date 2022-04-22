@@ -38,7 +38,7 @@ type BleReport struct {
 
 type IBeaconReport struct {
 	Id             int64  `db:"id"`
-	ReportId       int64  `db:"ble_report_id"`
+	BleReportId    int64  `db:"ble_report_id"`
 	ManufacturerId int    `db:"manufacturerId"`
 	Major          int    `db:"major"`
 	Minor          int    `db:"minor"`
@@ -99,7 +99,7 @@ func persistDbBleScan(db Database, scan *BleScan) error {
 		}
 
 		for _, b := range r.IBeaconReports {
-			b.ReportId = r.Id
+			b.BleReportId = r.Id
 			err = t.CreateIBeaconReport(&b)
 			if err != nil {
 				t.Rollback()

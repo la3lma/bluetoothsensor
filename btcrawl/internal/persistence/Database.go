@@ -122,14 +122,39 @@ func (tr *TrImpl) CreateBleReport(bleReport *BleReport) error {
 	return err
 }
 
-func (db *TrImpl) CreateIBeaconReport(iBeaconReport *IBeaconReport) error {
-	return nil
+/*
+CREATE TABLE IF NOT EXISTS iBeaconReport
+(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ble_report_id INTEGER NOT NULL,
+    manufacturerId INTEGER NOT NULL,
+    major INTEGER NOT NULL,
+    minor INTEGER NOT NULL,
+    proximityUUID TEXT NOT NULL,
+    power INTEGER,
+    FOREIGN KEY(ble_report_id) REFERENCES ble_report(id)
+);
+*/
+func (tr *TrImpl) CreateIBeaconReport(iBeaconReport *IBeaconReport) error {
+	result, err := tr.tr.Exec(
+		"INSERT INTO iBeaconReport(ble_report_id, manufacturerId, major, minor, proximityUUID, power) VALUES (?,?,?,?,?,?)",
+		iBeaconReport.BleReportId, iBeaconReport.ManufacturerId, iBeaconReport.Major,
+		iBeaconReport.Minor, iBeaconReport.ProximityUUID, iBeaconReport.Power)
+	if err != nil {
+		return err
+	}
+
+	newId, err := result.LastInsertId()
+	if err != nil {
+		iBeaconReport.Id = newId
+	}
+	return err
 }
 
-func (db *TrImpl) Rollback() error {
-	return nil
+func (tr *TrImpl) Rollback() error {
+	return tr.tr.Rollback()
 }
 
-func (db *TrImpl) Commit() error {
-	return nil
+func (tr *TrImpl) Commit() error {
+	return tr.tr.Commit()
 }
