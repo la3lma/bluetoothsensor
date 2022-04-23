@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"btcrawl/internal/crawler"
+	"btcrawl/internal/persistence"
 	"btcrawl/internal/report_parser"
 	"fmt"
 	"github.com/hashicorp/mdns"
@@ -96,31 +98,57 @@ func TestCrawling(t *testing.T) {
 
 }
 
-func TestSingleFetch(t *testing.T) {
-	url := "http://10.0.0.36/bluetooth-device-report"
+func NewInMemoryTestDatabase(t *testing.T) persistence.Database {
+	dbx, err := persistence.NewInMemoryDb()
+	err = persistence.InjectDatabaseModel(dbx)
+	assert.NoError(t, err, "Couldn't load schema")
+	return persistence.NewDatabase(dbx)
+}
 
-	client := http.Client{
-		Timeout: 450 * time.Second, // TODO: Set to 45 or 20 for prod
+func ReuseTestFileDatabase(t *testing.T) persistence.Database {
+	dbx, err := persistence.Reuse("full-tilt-scan-database.db")
+	// TODO: Only inject if the database doesn't already exist from before.
+	err = persistence.InjectProdDatabaseModel(dbx)
+	assert.NoError(t, err, "Couldn't load schema")
+	return persistence.NewDatabase(dbx)
+}
+
+// TODO: 1. Fix problem with bad scan number (injects two distinct scans, but only one should be injected)
+//       2. Fix problem with database truncating everything in it from previously.
+
+func TestSingleFetchEndToEnd(t *testing.T) {
+
+	ipAddrs := [2]string{"10.0.0.36", "10.0.0.35"}
+	for x := 0; x < 1000; x++ {
+		ipnr := ipAddrs[x%len(ipAddrs)]
+		fmt.Println("RUnning test # ", x, " on ip ", ipnr)
+		doTestingUsingIp(t, ipnr)
 	}
+}
 
-	fmt.Println("Zot")
-	resp, err := client.Get(url)
-	if err != nil {
-		assert.NoError(t, err, "Couldn't fetch url")
-	}
+func doTestingUsingIp(t *testing.T, ipAddr string) {
+	// db := NewTestFileDatabase(t)
+	db := ReuseTestFileDatabase(t)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error while receiving ", err)
-		resp.Body.Close()
+	url := fmt.Sprintf("http://%s/bluetooth-device-report", ipAddr)
+
+	jsonBytes, err := crawler.GetBluetoothReportStringFromScanner(url)
+	assert.NoError(t, err)
+
+	if len(jsonBytes) < 10 {
+		fmt.Println("No bytes read")
 		return
 	}
-	fmt.Println("Done reading")
-	defer resp.Body.Close()
 
-	fmt.Printf("Foo => %s\n", string(body))
-
-	bleScan, err := report_parser.ParseBtReport(body)
+	bleScan, err := report_parser.ParseBtReport(jsonBytes)
 	assert.NoError(t, err)
-	fmt.Println("bleScan = ", bleScan)
+
+	dbObj, err := persistence.JsonBtoreportToDbBtReport(&bleScan)
+	dbObj.IpAddress = ipAddr
+	dbObj.TimeOfScan = time.Now().Unix()
+	// TODO: Bug: There are two scan IDs recorded, but there should be only one.
+	err = persistence.PersistDbBleScan(db, dbObj)
+
+	assert.NoError(t, err, "Couldn't store in database: ", err)
+	fmt.Println("Done, scan recorded")
 }

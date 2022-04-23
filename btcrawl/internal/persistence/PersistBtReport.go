@@ -26,6 +26,7 @@ type ScannerID struct {
 type BleReport struct {
 	Id             int64  `db:"id"`
 	ScanId         int64  `db:"scanId"`
+	Name           string `db:"name"`
 	BleAddress     string `db:"bleAddress"`
 	Rssi           int    `db:"rssi"`
 	ServiceUUID    string `db:"serviceUUID"`
@@ -52,6 +53,7 @@ func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 		var noOfIbeaconReports = len(scan.BleReports[i].IBeaconReports)
 		result.BleReports[i] = BleReport{
 			Id:             -1,
+			Name:           scan.BleReports[i].Name,
 			BleAddress:     strings.ToLower(s.BleAddress),
 			Rssi:           s.Rssi,
 			ServiceUUID:    strings.ToLower(s.ServiceUUID),
@@ -74,7 +76,7 @@ func JsonBtoreportToDbBtReport(scan *report_parser.BleScan) (*BleScan, error) {
 	return &result, nil
 }
 
-func persistDbBleScan(db Database, scan *BleScan) error {
+func PersistDbBleScan(db Database, scan *BleScan) error {
 
 	t, err := db.BeginTransaction()
 	if err != err {
@@ -114,6 +116,6 @@ func PersistBtReport(db Database, scanFromJson *report_parser.BleScan) error {
 		return err
 	}
 
-	err = persistDbBleScan(db, dbBleScan)
+	err = PersistDbBleScan(db, dbBleScan)
 	return err
 }

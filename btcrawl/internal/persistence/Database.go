@@ -30,6 +30,15 @@ func NewFileDatabase(filename string) (*sqlx.DB, error) {
 	return dbx, nil
 }
 
+func Reuse(filename string) (*sqlx.DB, error) {
+	db, err := sql.Open("sqlite3", filename)
+	if err != nil {
+		return nil, err
+	}
+	dbx := sqlx.NewDb(db, "sqlite3")
+	return dbx, nil
+}
+
 func NewInMemoryDb() (*sqlx.DB, error) {
 	// TODO: This is an empty shell of a persistence mar db *sqlx.DB
 	// exactly the same as the built-in
@@ -40,9 +49,17 @@ func NewInMemoryDb() (*sqlx.DB, error) {
 	// db, err := sqlx.NewDb(sql.Open("sqlite3", ":memory:"), "sqlite3")
 }
 
-// TODO: This is an empty shell of a persistence model
 func InjectDatabaseModel(db *sqlx.DB) error {
 	schema, err := ioutil.ReadFile("../../../schema.sql")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(string(schema))
+	return err
+}
+
+func InjectProdDatabaseModel(db *sqlx.DB) error {
+	schema, err := ioutil.ReadFile("../../../prodschema.sql")
 	if err != nil {
 		return err
 	}
@@ -119,8 +136,8 @@ func (tr *TrImpl) CreateBtScan(scan *BleScan) error { // TODO: Rename to CreateB
 
 func (tr *TrImpl) CreateBleReport(bleReport *BleReport) error {
 	result, err := tr.tr.Exec(
-		"INSERT INTO ble_report(scanId, bleAddress, rssi, serviceUUID, uuid16bit) VALUES (?,?,?,?,?)",
-		bleReport.ScanId, bleReport.BleAddress, bleReport.Rssi, bleReport.ServiceUUID, bleReport.BitUUID)
+		"INSERT INTO ble_report(scanId, bleAddress, rssi, serviceUUID, uuid16bit, name) VALUES (?,?,?,?,?,?)",
+		bleReport.ScanId, bleReport.BleAddress, bleReport.Rssi, bleReport.ServiceUUID, bleReport.BitUUID, bleReport.Name)
 	if err != nil {
 		return err
 	}

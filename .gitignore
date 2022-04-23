@@ -6,3 +6,6 @@
 settings.json
 .DS_STORE
 *~
+
+.fake
+.ionide

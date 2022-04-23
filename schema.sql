@@ -18,7 +18,7 @@ DROP TABLE IF EXISTS uuid_16_bit;
 CREATE TABLE IF NOT EXISTS scan_type
 (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
+  name TEXT  NOT NULL UNIQUE,
   description TEXT
 );
 INSERT INTO scan_type(name, description)
@@ -27,7 +27,7 @@ VALUES ('bt', 'Bluetooth');
 CREATE TABLE  IF NOT EXISTS scanner_type
 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     description TEXT NOT NULL
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE  IF NOT EXISTS scanner
 );
 
 INSERT INTO scanner(mac, scannerTypeId)
-VALUES ("7C:9E:BD:4B:2F:1C", 1);
+VALUES ("7c:9e:bd:4b:2f:1c", 1);
 
 CREATE TABLE IF NOT EXISTS  scan
 (
