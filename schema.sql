@@ -78,16 +78,16 @@ VALUES (1, "0b:b0:d5:e9:5d:04", -37, "0000fd6f-0000-1000-8000-00805f9b34fb", "fd
 CREATE TABLE IF NOT EXISTS iBeaconReport
 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ble_report_id INTEGER NOT NULL,
+    bleReportId INTEGER NOT NULL,
     manufacturerId INTEGER NOT NULL,
     major INTEGER NOT NULL,
     minor INTEGER NOT NULL,
     proximityUUID TEXT NOT NULL,
     power INTEGER,
-    FOREIGN KEY(ble_report_id) REFERENCES ble_report(id)
+    FOREIGN KEY(bleReportId) REFERENCES ble_report(id)
 );
 
-INSERT INTO iBeaconReport(ble_report_id, manufacturerId, major, minor, proximityUUID, power)
+INSERT INTO iBeaconReport(bleReportId, manufacturerId, major, minor, proximityUUID, power)
 VALUES (1, 76, 2840, 8568,  "051075e0-2737-ab65-e885-5b84a2195b00", 90);
 
 

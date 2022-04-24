@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"io/ioutil"
+	"os"
 )
 
 type Transaction interface {
@@ -30,13 +31,27 @@ func NewFileDatabase(filename string) (*sqlx.DB, error) {
 	return dbx, nil
 }
 
-func Reuse(filename string) (*sqlx.DB, error) {
-	db, err := sql.Open("sqlite3", filename)
+func ReuseIfExistsOrCreateAndInitialize(filename string) (*sqlx.DB, error) {
+
+	// Check if database file exists or not, and remember that fact.
+	fileAlreadyExists := false
+	_, err := os.Stat(filename)
+	if err != nil {
+		fileAlreadyExists = true
+	}
+
+	// Open databasefile, creating it if it didn't already exist
+	dbx, err := NewFileDatabase(filename)
 	if err != nil {
 		return nil, err
 	}
-	dbx := sqlx.NewDb(db, "sqlite3")
-	return dbx, nil
+
+	// If database file didn't already exist, then fill it up with a full
+	// schema, & we're ready to roll.
+	if !fileAlreadyExists {
+		err = InjectDatabaseModel(dbx)
+	}
+	return dbx, err
 }
 
 func NewInMemoryDb() (*sqlx.DB, error) {
@@ -149,22 +164,9 @@ func (tr *TrImpl) CreateBleReport(bleReport *BleReport) error {
 	return err
 }
 
-/*
-CREATE TABLE IF NOT EXISTS iBeaconReport
-(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ble_report_id INTEGER NOT NULL,
-    manufacturerId INTEGER NOT NULL,
-    major INTEGER NOT NULL,
-    minor INTEGER NOT NULL,
-    proximityUUID TEXT NOT NULL,
-    power INTEGER,
-    FOREIGN KEY(ble_report_id) REFERENCES ble_report(id)
-);
-*/
 func (tr *TrImpl) CreateIBeaconReport(iBeaconReport *IBeaconReport) error {
 	result, err := tr.tr.Exec(
-		"INSERT INTO iBeaconReport(ble_report_id, manufacturerId, major, minor, proximityUUID, power) VALUES (?,?,?,?,?,?)",
+		"INSERT INTO iBeaconReport(bleReportId, manufacturerId, major, minor, proximityUUID, power) VALUES (?,?,?,?,?,?)",
 		iBeaconReport.BleReportId, iBeaconReport.ManufacturerId, iBeaconReport.Major,
 		iBeaconReport.Minor, iBeaconReport.ProximityUUID, iBeaconReport.Power)
 	if err != nil {

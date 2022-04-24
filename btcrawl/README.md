@@ -1,9 +1,21 @@
 
 ## TODO
 
-2. Read from service using http.
-3. Find services using mDNS
-4. Crawl available services using mDNS and http.
+* Make makefile to test and build
+* Fix naming inconsistencies between Go and SQL code
+* Make the mdns code work in conjunction with the crawler code
+* Make a goroutine to write to the database, and connect it to the crawler code.
+* Fix gripes from goland
+* Make static build that includes the sql file so that this thing
+  can go from zero to sixty just from an executable
+* Add logging functionality
+* Add rudimentary command line parsing, with a verbose mode
+* Make it run in docker (maybe)
+* Make it run on raspberry pi (cross compilation, network config)
+* Make it onto a system that just runs continously with very little maintenance.
+* Refactor persistence code to be split into multiple files
+* Refactor persistence code to be less repetitive
+* Put the persisted database files somewhere more correct than in the source tree.
 
 ## Resources
 
