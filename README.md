@@ -11,21 +11,7 @@ Listen for presence of bluetooth and wifi devices, reporty back to the mothershi
 
 TODO:
 
-* Fix bug, pick up device names
-* Make makefile to test and build
-* Fix naming inconsistencies between Go and SQL code
-* Fix gripes from goland
-* Make static build that includes the sql file so that this thing
-  can go from zero to sixty just from an executable
-* Add logging functionality
-* Add rudimentary command line parsing
-* Make it run in docker (maybe)
-* Make it run on raspberry pi
-* Make it onto a system that just runs continously
-* Refactor persistence code to be split into multiple files
-* Refactor persistence code to be less repetitive
-* Put the persisted database file somewhere more correct than in the source tree.
-
+* Se todo file in [server README.md](btcrawl/README.md)
 
 *  We're crashing due to watchdog timer timeout.  This should be simple enough to fix, so just fix it:
      D][BLEAdvertisedDevice.cpp:292] parseAdvertisement(): Type: 0x0a (), length: 1, data: 0E (18123) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
