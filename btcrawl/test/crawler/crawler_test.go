@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func fetchBtUsageReport(url string) {
+func FetchBtUsageReport(url string) {
 
 	client := http.Client{
 		Timeout: 450 * time.Second, // TODO: Set to 45 or 20
@@ -41,7 +41,20 @@ func fetchBtUsageReport(url string) {
 	resp.Body.Close()
 }
 
-func HandleEntry(entry *mdns.ServiceEntry) {
+func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) string {
+	url := fmt.Sprintf("http://%s/", entry.AddrV4)
+
+	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
+		// This is a  bluetooth monitor instance, poll it
+		fmt.Println("Got a btmonitor, fetching content")
+		url = fmt.Sprintf("http://%s/bluetooth-device-report", entry.AddrV4)
+		return url
+	} else {
+		return ""
+	}
+}
+
+func HandleMdnsEntry(entry *mdns.ServiceEntry) {
 	url := fmt.Sprintf("http://%s/", entry.AddrV4)
 
 	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
@@ -58,43 +71,41 @@ func HandleEntry(entry *mdns.ServiceEntry) {
 	fmt.Println("ipv4 = ", entry.AddrV4)
 	fmt.Println("URL = ", url)
 
-	fetchBtUsageReport(url)
+	FetchBtUsageReport(url)
 
 	fmt.Println("nobody")
 }
 
-func TestCrawling(t *testing.T) {
-	// Make a channel for results and start listening
-	entriesCh := make(chan *mdns.ServiceEntry, 4)
+// https://pkg.go.dev/github.com/hashicorp/mdns#section-readme
+
+func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
+	// Start the lookup, ipv4 only
+	params := mdns.DefaultParams("_http._tcp")
+	params.Entries = consumer
+	params.DisableIPv6 = true
+	params.Interface = &net.Interface{Name: "en9"}
+	mdns.Query(params)
+	fmt.Println("trubadurix")
+	close(entriesCh)
+	fmt.Println("Business")
+}
+
+func TestMdnsCrawling(t *testing.T) {
+	// Make a channel for results and start listening, only carries
+	// four requests in flight at the same time
+
+	maxRequestsInFlight := 4
+	entriesCh := make(chan *mdns.ServiceEntry, maxRequestsInFlight)
+
+	// Setting up a consumer running in parallel
 	go func() {
 		for entry := range entriesCh {
-			HandleEntry(entry)
+			HandleMdnsEntry(entry)
 			fmt.Println("foam")
 		}
 	}()
 
-	// Start the lookup, ipv4 only
-	params := mdns.DefaultParams("_http._tcp")
-	params.Entries = entriesCh
-	params.DisableIPv6 = true
-	params.Interface = &net.Interface{Name: "en9"}
-	for i := 1; i < 5; i++ {
-		mdns.Query(params)
-		fmt.Println("trubadurix")
-	}
-	close(entriesCh)
-	fmt.Println("Business")
-
-	// https://pkg.go.dev/github.com/hashicorp/mdns#section-readme
-	// Scan MDNS for stuff that is present
-	// Keep it in a cache maybe?
-	// Then crawl throug everything in the list of known thingies,
-	//   remove those who don't answer
-	// Send the results to persistence (use a channel maybe?)
-	// Tha's it.
-	// Need to explicitly state the interface to use for this thing to work. Maybe I should just iterate over all the en interfaces and catch them all?  ... or at least have a list of them as command line parameters
-
-	// Usage:   btcrawl database.db
+	CrawlMdnsForHttpServices("en9", entriesCh)
 
 }
 
@@ -124,29 +135,68 @@ func TestSingleFetchEndToEnd(t *testing.T) {
 	}
 }
 
-func doTestingUsingIp(t *testing.T, ipAddr string) {
-	// db := NewTestFileDatabase(t)
-	db := ReuseTestFileDatabase(t)
+func TestScanFromMdnsToDatabase(t *testing.T) {
 
+	db := ReuseTestFileDatabase(t)
+	maxRequestsInFlight := 4
+	entriesCh := make(chan *mdns.ServiceEntry, maxRequestsInFlight)
+
+	// Setting up a consumer running in parallel
+	go func() {
+		for entry := range entriesCh {
+			url := GetBluetoothScanningUrlFromEntry(entry)
+			if len(url) < 1 {
+				continue
+			}
+
+			// TODO: Do the scan, then stash in db
+			FetchBtReportFromUrlThenStoreInDb(url, db)
+		}
+	}()
+
+	CrawlMdnsForHttpServices("en9", entriesCh)
+}
+
+func FetchBtReportFromIpAddresThenStoreInDb(ipAddr string, db Database) error {
 	url := fmt.Sprintf("http://%s/bluetooth-device-report", ipAddr)
+	FetchBtReportFromIpAddresThenStoreInDb(url, db)
+}
+
+func FetchBtReportFromUrlThenStoreInDb(url string, db Database) error {
 
 	jsonBytes, err := crawler.GetBluetoothReportStringFromScanner(url)
 	assert.NoError(t, err)
 
 	if len(jsonBytes) < 10 {
 		fmt.Println("No bytes read")
-		return
+		return nil
 	}
 
 	bleScan, err := report_parser.ParseBtReport(jsonBytes)
-	assert.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	dbObj, err := persistence.JsonBtoreportToDbBtReport(&bleScan)
+	if err != nil {
+		return err
+	}
+
 	dbObj.IpAddress = ipAddr
 	dbObj.TimeOfScan = time.Now().Unix()
-	// TODO: Bug: There are two scan IDs recorded, but there should be only one.
-	err = persistence.PersistDbBleScan(db, dbObj)
 
-	assert.NoError(t, err, "Couldn't store in database: ", err)
+	err = persistence.PersistDbBleScan(db, dbObj)
+	if err != nil {
+		return err
+	}
+
 	fmt.Println("Done, scan recorded")
+	return nil
+}
+
+func doTestingUsingIp(t *testing.T, ipAddr string) {
+	// db := NewTestFileDatabase(t)
+	db := ReuseTestFileDatabase(t)
+	err := FetchBtReportFromIpAddresThenStoreInDb(t, string)
+	assert.NoError(t, err)
 }
