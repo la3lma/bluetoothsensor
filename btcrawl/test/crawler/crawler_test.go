@@ -107,8 +107,6 @@ func NewInMemoryTestDatabase(t *testing.T) persistence.Database {
 
 func ReuseTestFileDatabase(t *testing.T) persistence.Database {
 	dbx, err := persistence.ReuseIfExistsOrCreateAndInitialize("full-tilt-scan-database.db")
-	// TODO: Only inject if the database doesn't already exist from before.
-	err = persistence.InjectProdDatabaseModel(dbx)
 	assert.NoError(t, err, "Couldn't load schema")
 	return persistence.NewDatabase(dbx)
 }
