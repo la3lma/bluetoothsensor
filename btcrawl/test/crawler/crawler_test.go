@@ -41,16 +41,16 @@ func FetchBtUsageReport(url string) {
 	resp.Body.Close()
 }
 
-func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) string {
+func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) (string, string) {
 	url := fmt.Sprintf("http://%s/", entry.AddrV4)
 
 	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
 		// This is a  bluetooth monitor instance, poll it
 		fmt.Println("Got a btmonitor, fetching content")
 		url = fmt.Sprintf("http://%s/bluetooth-device-report", entry.AddrV4)
-		return url
+		return fmt.Sprintf("%s", entry.AddrV4), url
 	} else {
-		return ""
+		return "", ""
 	}
 }
 
@@ -85,9 +85,6 @@ func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
 	params.DisableIPv6 = true
 	params.Interface = &net.Interface{Name: "en9"}
 	mdns.Query(params)
-	fmt.Println("trubadurix")
-	close(entriesCh)
-	fmt.Println("Business")
 }
 
 func TestMdnsCrawling(t *testing.T) {
@@ -103,10 +100,10 @@ func TestMdnsCrawling(t *testing.T) {
 			HandleMdnsEntry(entry)
 			fmt.Println("foam")
 		}
+		close(entriesCh)
 	}()
 
 	CrawlMdnsForHttpServices("en9", entriesCh)
-
 }
 
 func NewInMemoryTestDatabase(t *testing.T) persistence.Database {
@@ -144,28 +141,30 @@ func TestScanFromMdnsToDatabase(t *testing.T) {
 	// Setting up a consumer running in parallel
 	go func() {
 		for entry := range entriesCh {
-			url := GetBluetoothScanningUrlFromEntry(entry)
+			ipAddr, url := GetBluetoothScanningUrlFromEntry(entry)
 			if len(url) < 1 {
 				continue
 			}
 
 			// TODO: Do the scan, then stash in db
-			FetchBtReportFromUrlThenStoreInDb(url, db)
+			FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
 		}
 	}()
 
 	CrawlMdnsForHttpServices("en9", entriesCh)
 }
 
-func FetchBtReportFromIpAddresThenStoreInDb(ipAddr string, db Database) error {
+func FetchBtReportFromIpAddresThenStoreInDb(ipAddr string, db persistence.Database) error {
 	url := fmt.Sprintf("http://%s/bluetooth-device-report", ipAddr)
-	FetchBtReportFromIpAddresThenStoreInDb(url, db)
+	return FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
 }
 
-func FetchBtReportFromUrlThenStoreInDb(url string, db Database) error {
+func FetchBtReportFromUrlThenStoreInDb(ipAddr string, url string, db persistence.Database) error {
 
 	jsonBytes, err := crawler.GetBluetoothReportStringFromScanner(url)
-	assert.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	if len(jsonBytes) < 10 {
 		fmt.Println("No bytes read")
@@ -197,6 +196,6 @@ func FetchBtReportFromUrlThenStoreInDb(url string, db Database) error {
 func doTestingUsingIp(t *testing.T, ipAddr string) {
 	// db := NewTestFileDatabase(t)
 	db := ReuseTestFileDatabase(t)
-	err := FetchBtReportFromIpAddresThenStoreInDb(t, string)
+	err := FetchBtReportFromIpAddresThenStoreInDb(ipAddr, db)
 	assert.NoError(t, err)
 }
