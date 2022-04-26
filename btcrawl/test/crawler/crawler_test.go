@@ -3,16 +3,13 @@ package persistence
 import (
 	"btcrawl/internal/crawler"
 	"btcrawl/internal/persistence"
-	"btcrawl/internal/report_parser"
 	"fmt"
 	"github.com/hashicorp/mdns"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"net"
 	"net/http"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
@@ -77,19 +74,6 @@ func HandleMdnsEntry(entry *mdns.ServiceEntry) {
 	fmt.Println("nobody")
 }
 
-// https://pkg.go.dev/github.com/hashicorp/mdns#section-readme
-
-func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
-	// Start the lookup, ipv4 only
-	params := mdns.DefaultParams("_http._tcp")
-	params.Entries = consumer
-	params.DisableIPv6 = true
-	if len(device) > 0 {
-		params.Interface = &net.Interface{Name: device}
-	}
-	mdns.Query(params)
-}
-
 func TestMdnsCrawling(t *testing.T) {
 	// Make a channel for results and start listening, only carries
 	// four requests in flight at the same time
@@ -106,7 +90,7 @@ func TestMdnsCrawling(t *testing.T) {
 		close(entriesCh)
 	}()
 
-	CrawlMdnsForHttpServices("", entriesCh) // "en9
+	crawler.CrawlMdnsForHttpServices("", entriesCh) // "en9
 }
 
 func NewInMemoryTestDatabase(t *testing.T) persistence.Database {
@@ -133,75 +117,13 @@ func TestSingleFetchEndToEnd(t *testing.T) {
 }
 
 func TestScanFromMdnsToDatabase(t *testing.T) {
-
 	db := ReuseTestFileDatabase(t)
-	maxRequestsInFlight := 4
-	var wg *sync.WaitGroup = new(sync.WaitGroup)
-	wg.Add(1)
-	entriesCh := make(chan *mdns.ServiceEntry, maxRequestsInFlight)
-
-	// Setting up a consumer running in parallel
-	go func() {
-		for entry := range entriesCh {
-			ipAddr, url := GetBluetoothScanningUrlFromEntry(entry)
-			if len(url) < 1 {
-				continue
-			}
-
-			// TODO: Do the scan, then stash in db
-			fmt.Println("About to fetch")
-			FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
-			fmt.Println("Done fetching to fetch")
-		}
-		wg.Done()
-	}()
-
-	CrawlMdnsForHttpServices("en9", entriesCh)
-	wg.Wait()
-}
-
-func FetchBtReportFromIpAddresThenStoreInDb(ipAddr string, db persistence.Database) error {
-	url := fmt.Sprintf("http://%s/bluetooth-device-report", ipAddr)
-	return FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
-}
-
-func FetchBtReportFromUrlThenStoreInDb(ipAddr string, url string, db persistence.Database) error {
-
-	jsonBytes, err := crawler.GetBluetoothReportStringFromScanner(url)
-	if err != nil {
-		return err
-	}
-
-	if len(jsonBytes) < 10 {
-		fmt.Println("No bytes read")
-		return nil
-	}
-
-	bleScan, err := report_parser.ParseBtReport(jsonBytes)
-	if err != nil {
-		return err
-	}
-
-	dbObj, err := persistence.JsonBtoreportToDbBtReport(&bleScan)
-	if err != nil {
-		return err
-	}
-
-	dbObj.IpAddress = ipAddr
-	dbObj.TimeOfScan = time.Now().Unix()
-
-	err = persistence.PersistDbBleScan(db, dbObj)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Done, scan recorded")
-	return nil
+	crawler.ProbeMdnsThenScanForBluetoothReports(db)
 }
 
 func doTestingUsingIp(t *testing.T, ipAddr string) {
 	// db := NewTestFileDatabase(t)
 	db := ReuseTestFileDatabase(t)
-	err := FetchBtReportFromIpAddresThenStoreInDb(ipAddr, db)
+	err := crawler.FetchBtReportFromIpAddresThenStoreInDb(ipAddr, db)
 	assert.NoError(t, err)
 }
