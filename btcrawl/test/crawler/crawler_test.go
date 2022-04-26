@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -83,7 +84,9 @@ func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
 	params := mdns.DefaultParams("_http._tcp")
 	params.Entries = consumer
 	params.DisableIPv6 = true
-	params.Interface = &net.Interface{Name: "en9"}
+	if len(device) > 0 {
+		params.Interface = &net.Interface{Name: device}
+	}
 	mdns.Query(params)
 }
 
@@ -103,7 +106,7 @@ func TestMdnsCrawling(t *testing.T) {
 		close(entriesCh)
 	}()
 
-	CrawlMdnsForHttpServices("en9", entriesCh)
+	CrawlMdnsForHttpServices("", entriesCh) // "en9
 }
 
 func NewInMemoryTestDatabase(t *testing.T) persistence.Database {
@@ -119,9 +122,6 @@ func ReuseTestFileDatabase(t *testing.T) persistence.Database {
 	return persistence.NewDatabase(dbx)
 }
 
-// TODO: 1. Fix problem with bad scan number (injects two distinct scans, but only one should be injected)
-//       2. Fix problem with database truncating everything in it from previously.
-
 func TestSingleFetchEndToEnd(t *testing.T) {
 
 	ipAddrs := [2]string{"10.0.0.36", "10.0.0.35"}
@@ -136,6 +136,8 @@ func TestScanFromMdnsToDatabase(t *testing.T) {
 
 	db := ReuseTestFileDatabase(t)
 	maxRequestsInFlight := 4
+	var wg *sync.WaitGroup = new(sync.WaitGroup)
+	wg.Add(1)
 	entriesCh := make(chan *mdns.ServiceEntry, maxRequestsInFlight)
 
 	// Setting up a consumer running in parallel
@@ -147,11 +149,15 @@ func TestScanFromMdnsToDatabase(t *testing.T) {
 			}
 
 			// TODO: Do the scan, then stash in db
+			fmt.Println("About to fetch")
 			FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
+			fmt.Println("Done fetching to fetch")
 		}
+		wg.Done()
 	}()
 
 	CrawlMdnsForHttpServices("en9", entriesCh)
+	wg.Wait()
 }
 
 func FetchBtReportFromIpAddresThenStoreInDb(ipAddr string, db persistence.Database) error {
