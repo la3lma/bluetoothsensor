@@ -39,19 +39,6 @@ func FetchBtUsageReport(url string) {
 	resp.Body.Close()
 }
 
-func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) (string, string) {
-	url := fmt.Sprintf("http://%s/", entry.AddrV4)
-
-	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
-		// This is a  bluetooth monitor instance, poll it
-		fmt.Println("Got a btmonitor, fetching content")
-		url = fmt.Sprintf("http://%s/bluetooth-device-report", entry.AddrV4)
-		return fmt.Sprintf("%s", entry.AddrV4), url
-	} else {
-		return "", ""
-	}
-}
-
 func HandleMdnsEntry(entry *mdns.ServiceEntry) {
 	url := fmt.Sprintf("http://%s/", entry.AddrV4)
 

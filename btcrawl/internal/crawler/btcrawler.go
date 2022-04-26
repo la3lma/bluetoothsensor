@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -84,6 +85,19 @@ func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
 	mdns.Query(params)
 }
 
+func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) (string, string) {
+	url := fmt.Sprintf("http://%s/", entry.AddrV4)
+
+	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
+		// This is a  bluetooth monitor instance, poll it
+		fmt.Println("Got a btmonitor, fetching content")
+		url = fmt.Sprintf("http://%s/bluetooth-device-report", entry.AddrV4)
+		return fmt.Sprintf("%s", entry.AddrV4), url
+	} else {
+		return "", ""
+	}
+}
+
 func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
 	maxRequestsInFlight := 4
 	var wg *sync.WaitGroup = new(sync.WaitGroup)
@@ -101,7 +115,7 @@ func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
 
 			// TODO: Do the scan, then stash in db
 			fmt.Println("About to fetch  from ", url)
-			crawler.FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
+			FetchBtReportFromUrlThenStoreInDb(ipAddr, url, db)
 			fmt.Println("Done fetching from ", url)
 		}
 		fmt.Println("One round of crawling done.")
