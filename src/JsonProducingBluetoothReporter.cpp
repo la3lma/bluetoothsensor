@@ -61,17 +61,6 @@ void BLEBasicReport::toJson(JsonObject json)
     {
         json["serviceUUID"] = this->serviceUUID;
         json["16bitUUID"] = this->serviceUUIDVendorCode;
-
-        /*  THis fails, so we're commenting out for now. Will probably need to delete
-            (or maybe enable, we'll see).
-        int uuidCode = strtol(this->serviceUUIDVendorCode.c_str(), 0, 16);
-        BtleUuidEntry *entry =   findUuidEntry(uuidCode);
-        if (entry != NULL) {
-            json["16bitUUIDAllocationType"] = entry->allocationType.c_str();
-            json["16bitUUIDAllocatedFor"]  =  entry->allocatedFor.c_str();
-        }
-        */
-        
     }
 
     if (this->haveTXPower)

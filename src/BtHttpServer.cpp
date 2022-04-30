@@ -18,7 +18,6 @@ esp_err_t get_handler(httpd_req_t *req)
 }
 
 
-
  #define MIN(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \

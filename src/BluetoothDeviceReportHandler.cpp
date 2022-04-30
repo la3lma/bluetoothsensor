@@ -10,7 +10,7 @@
 #include <BLEEddystoneURL.h>
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
-#include <esp_task_wdt.h>>
+#include <esp_task_wdt.h>
 
 #include "BluetoothDeviceReportHandler.h"
 #include "JsonProducingBluetoothReporter.h"
