@@ -12,8 +12,6 @@ void connectToWifiNetwork()
     const char *ssid = "Telenor7329hos";
     const char *password = "adscljsaupblg";
 
-    // delay(10);
-
     WiFi.begin(ssid, password);
     ESP_LOGV(TAG, "Connecting to %s", ssid);
 

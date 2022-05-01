@@ -4,12 +4,9 @@
 #include <map>
 #include <iterator>
 #include <string>
-#include <esp_task_wdt.h>>
-
-
+#include <esp_task_wdt.h>
 
 #include "JsonProducingBluetoothReporter.h"
-#include "BtleUuidDecoder.h"
 
 static const char* TAG = "JsonProducingBluetoothRepoter";
 
