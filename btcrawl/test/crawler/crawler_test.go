@@ -105,12 +105,15 @@ func TestSingleFetchEndToEnd(t *testing.T) {
 
 func TestScanFromMdnsToDatabase(t *testing.T) {
 	db := ReuseTestFileDatabase(t)
-	crawler.ProbeMdnsThenScanForBluetoothReports(db)
+	for i := 1; i < 5; i++ {
+		crawler.ProbeMdnsThenScanForBluetoothReports(db)
+	}
 }
 
 func doTestingUsingIp(t *testing.T, ipAddr string) {
 	// db := NewTestFileDatabase(t)
 	db := ReuseTestFileDatabase(t)
+
 	err := crawler.FetchBtReportFromIpAddresThenStoreInDb(ipAddr, db)
 	assert.NoError(t, err)
 }
