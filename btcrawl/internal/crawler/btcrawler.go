@@ -79,23 +79,24 @@ func CrawlMdnsForHttpServices(device string, consumer chan *mdns.ServiceEntry) {
 	params := mdns.DefaultParams("_http._tcp")
 	params.Entries = consumer
 	params.DisableIPv6 = true
+	params.Timeout = time.Duration(15000000000) // 15 seconds in nanoseconds
 	if len(device) > 0 {
 		params.Interface = &net.Interface{Name: device}
 	}
 	mdns.Query(params)
+	close(consumer)
 }
 
 func GetBluetoothScanningUrlFromEntry(entry *mdns.ServiceEntry) (string, string) {
-	url := fmt.Sprintf("http://%s/", entry.AddrV4)
-
+	ip := fmt.Sprintf("%s", entry.AddrV4)
+	url := ""
 	if strings.HasPrefix(entry.Name, "btmonitor-") { // TODO: Magic string removal
 		// This is a  bluetooth monitor instance, poll it
 		fmt.Println("Got a btmonitor, fetching content")
 		url = fmt.Sprintf("http://%s/bluetooth-device-report", entry.AddrV4)
-		return fmt.Sprintf("%s", entry.AddrV4), url
-	} else {
-		return "", ""
 	}
+
+	return ip, url
 }
 
 func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
@@ -106,10 +107,12 @@ func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
 
 	// Setting up a consumer running in parallel
 	go func() {
+		defer wg.Done()
 		for entry := range entriesCh {
 			ipAddr, url := GetBluetoothScanningUrlFromEntry(entry)
-			fmt.Println("Considering url = ", url)
+			fmt.Println(fmt.Sprintf("Considering url = '%s'.  ipAddr = %s", url, ipAddr))
 			if len(url) < 1 {
+				fmt.Println("  ... skipping")
 				continue
 			}
 
@@ -119,10 +122,9 @@ func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
 			fmt.Println("Done fetching from ", url)
 		}
 		fmt.Println("One round of crawling done.")
-		wg.Done()
 	}()
 
-	fmt.Println("Start crawling crawling")
+	fmt.Println("Start crawling")
 	CrawlMdnsForHttpServices("en9", entriesCh)
 	wg.Wait()
 	fmt.Println("Done crawling")
