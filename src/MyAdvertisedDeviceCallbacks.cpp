@@ -160,7 +160,11 @@ void MyAdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice)
 
     // This latter part seems to be looking at the payload and parsing that somehow
     // in particuluar, assuming some "eddistone" type of bluetooth  beacon device
-    // I think we're just dropping that for now.
+    // I think we're just dropping that for now, but it seems clear that we want to
+    // parse this info at some point.  Most likey we want to sendt it all to the server
+    // and let the server do the interpretation.
+    
+    // https://www.mokoblue.com/no/all-about-eddystone-beacon/
     /*
 
     uint8_t *payLoad = advertisedDevice.getPayload();
