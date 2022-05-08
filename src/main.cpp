@@ -1,21 +1,23 @@
-#include <esp32-hal-log.h>
+
+
 #include <esp_task_wdt.h>
 #include "MyAdvertisedDeviceCallbacks.h"
-#include "HttpClientAdapter.h"
 #include "BtHttpServer.h"
 #include "WifiConnectivity.h"
 #include "MdnsSetup.h"
 
-static const char* TAG = "Main";
+
+
 
 int timeBetweenScans = 2000; // In milliseconds
 BLEScan *pBLEScan;
 
 BluetoothReporter *myReporter;
-HttpClientAdapter *httpClientAdapter;
 
 void setup()
 {
+  const char *TAG = "MAIN program setup";
+  
   Serial.begin(230400); // TODO: Maybe set to be much faster?
 
   ESP_LOGV(TAG, "Starting up");

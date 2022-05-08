@@ -1,6 +1,5 @@
 #include <esp_http_server.h>
-#include <esp32-hal-log.h>
-#include <WiFi.h>
+#include "esp_wifi.h"
 #include <ArduinoJson.h>
 
 #include <BLEDevice.h>
@@ -11,6 +10,7 @@
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
 #include <esp_task_wdt.h>
+#include "esp_log.h"
 
 #include "BluetoothDeviceReportHandler.h"
 #include "JsonProducingBluetoothReporter.h"

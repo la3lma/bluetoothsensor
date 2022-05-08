@@ -1,6 +1,6 @@
 #include <esp_http_server.h>
-#include <esp32-hal-log.h>
-#include <WiFi.h>
+#include "esp_log.h"
+#include "esp_wifi.h"
 #include <ArduinoJson.h>
 
 

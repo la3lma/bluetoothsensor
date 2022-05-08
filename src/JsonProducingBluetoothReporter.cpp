@@ -1,5 +1,5 @@
 #include <ArduinoJson.h>
-#include <WiFi.h>
+#include "esp_wifi.h"
 #include <list>
 #include <map>
 #include <iterator>

@@ -6,8 +6,7 @@
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
 #include <esp_task_wdt.h>
-#include <esp32-hal-log.h>
-
+#include "esp_log.h"
 
 #include "MyAdvertisedDeviceCallbacks.h"
 

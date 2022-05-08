@@ -33,3 +33,14 @@ TODO:
 
 https://en.wikipedia.org/wiki/IBeacon
 
+
+
+
+TODO:
+
+* A clever way to connect a device to wifi without hardcoding the ssid/pwd
+    https://github.com/nkolban/esp32-snippets/tree/master/networking/bootwifi
+* This is also an idea:
+    https://github.com/tzapu/WiFiManager
+* https://github.com/espressif/esp-idf/blob/a82e6e63d9/examples/wifi/getting_started/station/main/station_example_main.c
+

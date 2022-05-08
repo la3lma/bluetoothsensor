@@ -1,7 +1,7 @@
 #ifndef CONNECTTOWIFINETWORK_H
 #define CONNECTTOWIFINETWORK_H
 
-#include <WiFi.h>
+#include "esp_wifi.h"
 
 void connectToWifiNetwork();
 

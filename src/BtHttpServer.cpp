@@ -1,5 +1,5 @@
 #include <esp_http_server.h>
-#include <esp32-hal-log.h>
+#include "esp_log.h"
 
 #include "WifiApReportHandler.h"
 #include "BluetoothDeviceReportHandler.h"

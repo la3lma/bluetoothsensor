@@ -1,9 +1,10 @@
 #include <mdns.h>
-#include <esp32-hal-log.h>
+#include "esp_log.h"
 
 #include "MdnsSetup.h"
 
 void mdns_setup() {
+    const char *TAG = "MDNS setup";
 
     const int hostname_buffer_length = 40;
 
