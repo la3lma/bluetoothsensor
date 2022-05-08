@@ -105,7 +105,8 @@ func TestSingleFetchEndToEnd(t *testing.T) {
 
 func TestScanFromMdnsToDatabase(t *testing.T) {
 	db := ReuseTestFileDatabase(t)
-	for i := 1; i < 5; i++ {
+	for i := 1; i < 50; i++ {
+		fmt.Println(fmt.Sprintf("\n\n===\nGoing for round %d", i))
 		crawler.ProbeMdnsThenScanForBluetoothReports(db)
 	}
 }
