@@ -124,7 +124,6 @@ String JsonProducingBluetoothReporter::scanDone()
     String output;
     serializeJson(doc, output);
 
-
     ESP_LOGV(TAG, "Returning result");
     return output;
 }
