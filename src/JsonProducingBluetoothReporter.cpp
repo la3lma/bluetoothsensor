@@ -11,9 +11,8 @@
 static const char* TAG = "JsonProducingBluetoothRepoter";
 
 // TODO:    For each of the incoming method calls, generate full JSON, and put it in a
-//          string (or a list of strings, whatever is the simplest).  That list of strings (or whatever),
+//          string (or a list of strings, whatever is the simplest).  That list of strings,
 //          is then printed as an array of json objects, and that's how we serialize this stuff.
-//          C++ is such a shitty language.
 
 char *safeCopy(const char *arg)
 {
@@ -90,7 +89,7 @@ bool JsonProducingBluetoothReporter::hasKey(std::string &key)
 
 BLEBasicReport * JsonProducingBluetoothReporter::registerNewReport(std::string bleAddress)
 {
-    esp_task_wdt_reset(); // TODO: Reset watchdog timer.
+    esp_task_wdt_reset(); // Reset watchdog timer to avoid timeout.
     BLEBasicReport *report = new BLEBasicReport();
     report->bleAddress = bleAddress;
 
@@ -124,6 +123,7 @@ String JsonProducingBluetoothReporter::scanDone()
     // Print json doc.
     String output;
     serializeJson(doc, output);
+
 
     ESP_LOGV(TAG, "Returning result");
     return output;

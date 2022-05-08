@@ -19,10 +19,10 @@
 static const char* TAG = "BluetoothDeviceReportHandler";
 
 
-int scanTime = 5;            //In seconds
-
 String scanAndReportBluetoothNetwork()
 {
+
+  int scanTime = 5;            //In seconds
 
   ESP_LOGV(TAG, "Starting Bluetooth scan ");
   ESP_LOGV(TAG, "... scanning, this may take a while");
@@ -32,7 +32,7 @@ String scanAndReportBluetoothNetwork()
 
   BLEScan *pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(myReporter));
-  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
+  pBLEScan->setActiveScan(true);
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99); // less or equal setInterval value
 
@@ -40,9 +40,9 @@ String scanAndReportBluetoothNetwork()
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   ESP_LOGV(TAG, "Found %d bluetooth devices", foundDevices.getCount());
 
-  // TODO: Add the ethernet mac adress here instead of the bananaphone thing.
-  String result = myReporter->scanDone();  // TODO: Just get it as a simple json string, or crash trying.
-  pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
+
+  String result = myReporter->scanDone();
+  pBLEScan->clearResults();
 
   return result;
 }
@@ -56,4 +56,3 @@ esp_err_t get_bluetooth_device_report_handler(httpd_req_t *req)
     httpd_resp_send(req, scanAndReportBluetoothNetwork().c_str(), HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
-
