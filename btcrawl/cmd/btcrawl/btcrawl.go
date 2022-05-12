@@ -24,6 +24,6 @@ func main() {
 
 	for {
 		crawler.ProbeMdnsThenScanForBluetoothReports(db)
-		time.Sleep(3 * time.Second)
+		time.Sleep(37 * time.Second)
 	}
 }
