@@ -31,17 +31,16 @@ func NewFileDatabase(filename string) (*sqlx.DB, error) {
 	return dbx, nil
 }
 
-func ReuseIfExistsOrCreateAndInitialize(filename string) (*sqlx.DB, error) {
-
+func ReuseIfExistsOrCreateAndInitializeFromSqlString(dbFilename string, schemaString string) (*sqlx.DB, error) {
 	// Check if database file exists or not, and remember that fact.
 	fileAlreadyExists := false
-	_, err := os.Stat(filename)
+	_, err := os.Stat(dbFilename)
 	if err != nil {
 		fileAlreadyExists = true
 	}
 
 	// Open databasefile, creating it if it didn't already exist
-	dbx, err := NewFileDatabase(filename)
+	dbx, err := NewFileDatabase(dbFilename)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func ReuseIfExistsOrCreateAndInitialize(filename string) (*sqlx.DB, error) {
 	// If database file didn't already exist, then fill it up with a full
 	// schema, & we're ready to roll.
 	if !fileAlreadyExists {
-		err = InjectDatabaseModel(dbx)
+		err = InjectDatabaseModelFromSqlSchemaString(dbx, schemaString)
 	}
 	return dbx, err
 }
@@ -64,13 +63,21 @@ func NewInMemoryDb() (*sqlx.DB, error) {
 	// db, err := sqlx.NewDb(sql.Open("sqlite3", ":memory:"), "sqlite3")
 }
 
-func InjectDatabaseModel(db *sqlx.DB) error {
-	schema, err := ioutil.ReadFile("../../../schema.sql")
+func InjectDatabaseModelFromSqlSchemaFile(db *sqlx.DB, sqlFilename string) error {
+	schema, err := ioutil.ReadFile(sqlFilename)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(string(schema))
+	return InjectDatabaseModelFromSqlSchemaString(db, string(schema))
+}
+
+func InjectDatabaseModelFromSqlSchemaString(db *sqlx.DB, sqlSchemaString string) error {
+	_, err := db.Exec(string(sqlSchemaString))
 	return err
+}
+
+func InjectDatabaseModel(db *sqlx.DB) error {
+	return InjectDatabaseModelFromSqlSchemaFile(db, "../../../schema.sql")
 }
 
 func InjectProdDatabaseModel(db *sqlx.DB) error {

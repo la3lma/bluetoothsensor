@@ -110,7 +110,7 @@ func ProbeMdnsThenScanForBluetoothReports(db persistence.Database) {
 		defer wg.Done()
 		for entry := range entriesCh {
 			ipAddr, url := GetBluetoothScanningUrlFromEntry(entry)
-			fmt.Println(fmt.Sprintf("Considering url = '%s'.  ipAddr = %s", url, ipAddr))
+			fmt.Println(fmt.Sprintf("Considering mDNS announced url = '%s'.  ipAddr = %s", url, ipAddr))
 			if len(url) < 1 {
 				fmt.Println("  ... skipping")
 				continue

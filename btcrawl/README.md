@@ -2,6 +2,8 @@
 ## TODO
 
 * Make makefile to test and build
+* Build static executable containing all the necessary config and sql files to
+  get started from nothing else.
 * Fix naming inconsistencies between Go and SQL code
 * Make the mdns code work in conjunction with the crawler code
 * Make a goroutine to write to the database, and connect it to the crawler code.
