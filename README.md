@@ -9,7 +9,15 @@ Listen for presence of bluetooth and wifi devices, reporty back to the mothershi
 
 
 
+
+
 TODO:
+
+
+* Use Borud's ESP32 template to make a new basis for a BT/ether
+  scanner project https://github.com/borud/esp-box-template.
+  Plan: Abandon arduino toolchain completely.
+
 
 * Se todo file in [server README.md](btcrawl/README.md)
 
