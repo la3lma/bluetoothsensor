@@ -6,6 +6,7 @@
 void mdns_setup() {
 
     const int hostname_buffer_length = 40;
+    static const char* TAG = "mdns_setup";
 
     ESP_LOGV(TAG, "Setting up MDNS");
 
