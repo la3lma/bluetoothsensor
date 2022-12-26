@@ -79,10 +79,6 @@ INSERT INTO iBeaconReport(bleReportId, manufacturerId, major, minor, proximityUU
 VALUES (1, 76, 2840, 8568,  "051075e0-2737-ab65-e885-5b84a2195b00", 90);
 
 
-
-
-
-
 --
 -- Manufacturer data
 --
